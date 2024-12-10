@@ -1,1 +1,2 @@
-# dbms
+# Personalized timetable generator
+This DBMS project automates the generation of personalized timetables for teachers. Using OCR technology, it extracts data from existing timetables and customizes schedules based on course codes and teacher names. Teachers can log in to view their schedules and record overtime hours. An admin panel allows administrators to manage teacher profiles and timetable configurations efficiently.
