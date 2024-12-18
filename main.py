@@ -2,7 +2,6 @@ from pymongo import MongoClient
 from flask import Flask, render_template, url_for, request, redirect, flash
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Secret key for flash messages
 client = MongoClient("mongodb://localhost:27017/")
 db = client["management_dbms"]
 
