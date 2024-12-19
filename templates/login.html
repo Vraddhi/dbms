@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form_container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #333;
+            width: 100%;
+            max-width: 400px;
+        }
+        .form_container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2575fc;
+        }
+        .input_box {
+            margin-bottom: 15px;
+        }
+        .input_box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .button {
+            width: 100%;
+            padding: 10px;
+            background: #2575fc;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #1e5bbf;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form_container">
+    <h2>Login</h2>
+    <form id="loginForm" action="{{ url_for('login') }}" method="POST">
+        <div class="input_box">
+            <input type="email" name="email" placeholder="Enter your email" required />
+        </div>
+        <div class="input_box">
+            <input type="password" name="password" placeholder="Enter your password" required />
+        </div>
+        <button class="button" type="submit">Login</button>
+    </form>
+</div>
+
+</body>
+</html>

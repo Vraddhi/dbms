@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Schedule Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .dynamic-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .dynamic-group input {
+            flex: 1;
+            margin-right: 5px;
+        }
+        .add-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-button:hover {
+            background-color: #45a049;
+        }
+        .remove-button {
+            background-color: #f44336;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .remove-button:hover {
+            background-color: #e53935;
+        }
+    </style>
+    <script>
+        function addDynamicField(dayIndex) {
+            const container = document.getElementById(`dynamic-fields-container-${dayIndex}`);
+            const newFieldGroup = document.createElement('div');
+            newFieldGroup.classList.add('dynamic-group');
+
+            // Clone input fields for time slot, course, and teacher
+            const slotField = document.createElement('input');
+            slotField.type = 'text';
+            slotField.name = `slot[${dayIndex}][]`;
+            slotField.placeholder = 'Enter Slot (e.g., 9:00 AM - 10:00 AM)';
+            slotField.required = true;
+
+            const courseField = document.createElement('input');
+            courseField.type = 'text';
+            courseField.name = `course[${dayIndex}][]`;
+            courseField.placeholder = 'Enter Course';
+            courseField.required = true;
+
+            const teacherField = document.createElement('input');
+            teacherField.type = 'text';
+            teacherField.name = `teacher[${dayIndex}][]`;
+            teacherField.placeholder = 'Enter Teacher\'s Name';
+            teacherField.required = true;
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.classList.add('remove-button');
+            removeButton.textContent = 'Remove';
+            removeButton.onclick = () => newFieldGroup.remove();
+
+            newFieldGroup.appendChild(slotField);
+            newFieldGroup.appendChild(courseField);
+            newFieldGroup.appendChild(teacherField);
+            newFieldGroup.appendChild(removeButton);
+
+            container.appendChild(newFieldGroup);
+        }
+
+        function addDayField() {
+            const daysContainer = document.getElementById('days-container');
+            const dayIndex = daysContainer.childElementCount;
+
+            const newDayGroup = document.createElement('div');
+            newDayGroup.classList.add('day-group');
+            newDayGroup.id = `day-group-${dayIndex}`;
+
+            const dayField = document.createElement('input');
+            dayField.type = 'text';
+            dayField.name = 'day[]';
+            dayField.placeholder = 'Enter Day (e.g., Monday)';
+            dayField.required = true;
+
+            const slotContainer = document.createElement('div');
+            slotContainer.id = `dynamic-fields-container-${dayIndex}`;
+
+            const addSlotButton = document.createElement('button');
+            addSlotButton.type = 'button';
+            addSlotButton.classList.add('add-button');
+            addSlotButton.textContent = '+ Add Time Slot';
+            addSlotButton.onclick = () => addDynamicField(dayIndex);
+
+            newDayGroup.appendChild(dayField);
+            newDayGroup.appendChild(slotContainer);
+            newDayGroup.appendChild(addSlotButton);
+            daysContainer.appendChild(newDayGroup);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Schedule Input Form</h2>
+        <form action="/addtimetable" method="POST">
+            <div class="form-group">
+                <label for="sem">Semester:</label>
+                <select id="sem" name="sem" required>
+                    <option value="">Select Semester</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <input type="number" id="year" name="year" placeholder="Enter Year" required>
+            </div>
+
+            <div class="form-group">
+                <label for="scheme">Scheme:</label>
+                <input type="text" id="scheme" name="scheme" placeholder="Enter Scheme" required>
+            </div>
+
+            <div class="form-group">
+                <label for="dept">Department:</label>
+                <input type="text" id="dept" name="dept" placeholder="Enter Department" required>
+            </div>
+
+            <div id="days-container"></div>
+
+            <button type="button" class="add-button" onclick="addDayField()">+ Add Day</button>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

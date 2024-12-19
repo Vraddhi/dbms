@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h2, h3 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            background-color: #f9c74f;
+            color: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #f2c94c;
+            border-radius: 4px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .actions button {
+            background-color: #007bff;
+        }
+        .actions button:hover {
+            background-color: #0056b3;
+        }
+        .delete {
+            background-color: #dc3545;
+        }
+        .delete:hover {
+            background-color: #a71d2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome to the Timetable Management System</h2>
+        <p>Please choose an option to proceed:</p>
+
+        <!-- Faculty Signup -->
+        <form action="/faculty_signup" method="POST">
+            <div class="form-group">
+                <h3>Faculty Signup</h3>
+                <label for="faculty-name">Name:</label>
+                <input type="text" id="faculty-name" name="faculty-name" placeholder="Enter Your Name" required>
+                <label for="faculty-id">Faculty ID:</label>
+                <input type="text" id="faculty-id" name="faculty-id" placeholder="Enter Faculty ID" required>
+                <label for="faculty-email">Email:</label>
+                <input type="email" id="faculty-email" name="faculty-email" placeholder="Enter Email" required>
+                <label for="faculty-password">Password:</label>
+                <input type="password" id="faculty-password" name="faculty-password" placeholder="Enter Password" required>
+                <button type="submit">Signup</button>
+            </div>
+        </form>
+
+        <!-- Faculty Login -->
+        <form action="/faculty_login" method="POST">
+            <div class="form-group">
+                <h3>Faculty Login</h3>
+                <label for="faculty-login-id">Faculty ID:</label>
+                <input type="text" id="faculty-login-id" name="faculty-login-id" placeholder="Enter Faculty ID" required>
+                <label for="faculty-password">Password:</label>
+                <input type="password" id="faculty-login-password" name="faculty-login-password" placeholder="Enter Password" required>
+                <button type="submit">Login</button>
+            </div>
+        </form>
+
+        <!-- Timetable Section -->
+        <div class="form-group">
+            <h3>Timetable Options</h3>
+            <!-- If timetable exists -->
+            <!-- Replace this section dynamically based on backend logic -->
+            <div>
+                <p><strong>Current Timetable:</strong></p>
+                <p>Timetable is available.</p>
+                <div class="actions">
+                    <button onclick="location.href='/addtimetable'">View Timetable</button>
+                    <button onclick="location.href='/edit_timetable'">Edit Timetable</button>
+                    <button class="delete" onclick="location.href='/delete_timetable'">Delete Timetable</button>
+                </div>
+            </div>
+            <!-- If timetable does not exist -->
+            <!-- Uncomment the following block if no timetable is created -->
+            <!--
+            <div class="message">
+                <p>No timetable has been created yet.</p>
+                <button onclick="location.href='/generate_timetable'">Generate Timetable</button>
+            </div>
+            -->
+        </div>
+
+        <!-- Navigate to Add Course Page -->
+        <div class="form-group">
+            <h3>Add Course</h3>
+            <p>You can navigate to the Add Course page to manage courses.</p>
+            <button onclick="location.href='/add_course'">Go to Add Course Page</button>
+        </div>
+    </div>
+</body>
+</html>
