@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    <title>Teacher Login</title>
     <style>
+        /* General Styling */
         body {
             background: linear-gradient(to right, #6a11cb, #2575fc);
             font-family: 'Poppins', sans-serif;
@@ -15,30 +16,41 @@
             height: 100vh;
             margin: 0;
         }
+
         .form_container {
             background: #fff;
-            padding: 20px;
+            padding: 55px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             color: #333;
             width: 100%;
             max-width: 400px;
-        }
-        .form_container h2 {
             text-align: center;
+        }
+
+        .form_container h2 {
+            font-size: 24px;
             margin-bottom: 20px;
             color: #2575fc;
         }
+
         .input_box {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: left;
         }
+
         .input_box input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
         }
+
+        .input_box input:focus {
+            border: 2px solid #2575fc;
+        }
+
         .button {
             width: 100%;
             padding: 10px;
@@ -50,6 +62,7 @@
             cursor: pointer;
             transition: background 0.3s;
         }
+
         .button:hover {
             background: #1e5bbf;
         }
@@ -57,18 +70,20 @@
 </head>
 <body>
 
-<div class="form_container">
-    <h2>Login</h2>
-    <form id="loginForm" action="{{ url_for('login') }}" method="POST">
-        <div class="input_box">
-            <input type="email" name="email" placeholder="Enter your email" required />
-        </div>
-        <div class="input_box">
-            <input type="password" name="password" placeholder="Enter your password" required />
-        </div>
-        <button class="button" type="submit">Login</button>
-    </form>
-</div>
+    <div class="form_container">
+        <h2>Teacher Login</h2>
+        <form id="teacherLoginForm" action="{{ url_for('login') }}" method="POST">
+            <div class="input_box">
+                <label for="email">Email:</label>
+                <input type="email" name="email" placeholder="Enter your email" required />
+            </div>
+            <div class="input_box">
+                <label for="password">Password:</label>
+                <input type="password" name="password" placeholder="Enter your password" required />
+            </div>
+            <button class="button" type="submit">Login</button>
+        </form>
+    </div>
 
 </body>
 </html>

@@ -3,231 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduFlow - Entry Page</title>
-   <style>
+    <title>Admin Login</title>
+    <style>
         /* General Styling */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
         body {
             background: linear-gradient(to right, #6a11cb, #2575fc);
+            font-family: 'Poppins', sans-serif;
             color: #fff;
-            overflow: hidden;
-        }
-        .container {
-            text-align: center;
-            padding: 50px 20px;
-        }
-        .logo {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .description {
-            font-size: 1.2rem;
-            margin: 20px auto;
-            max-width: 700px;
-            line-height: 1.6;
-        }
-        .buttons {
-            margin-top: 30px;
-        }
-        .btn {
-            display: inline-block;
-            background: #ffffff;
-            color: #2575fc;
-            padding: 12px 25px;
-            margin: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: background 0.3s, color 0.3s;
-        }
-        .btn:hover {
-            background: #2575fc;
-            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
 
-        /* Form Styling */
         .form_container {
-            position: fixed;
-            max-width: 320px;
-            width: 100%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(1.2);
-            z-index: 101;
             background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.4s ease-out;
-        }
-        .form_container.active {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translate(-50%, -50%) scale(1);
-        }
-        .form_close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            color: #0b0217;
-            font-size: 22px;
-            opacity: 0.7;
-            cursor: pointer;
-        }
-        .form_container h2 {
-            font-size: 22px;
-            color: #0b0217;
+            padding: 55px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #333;
+            width: 100%;
+            max-width: 400px;
             text-align: center;
         }
+
+        .form_container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2575fc;
+        }
+
         .input_box {
-            position: relative;
-            margin-top: 30px;
-            width: 100%;
-            height: 40px;
+            margin-bottom: 20px;
+            text-align: left;
         }
+
         .input_box input {
-            height: 100%;
             width: 100%;
-            border: none;
-            outline: none;
-            padding: 0 30px;
-            color: #333;
-            transition: all 0.2s ease;
-            border-bottom: 1.5px solid #aaaaaa;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
         }
+
         .input_box input:focus {
-            border-color: #7d2ae8;
+            border: 2px solid #2575fc;
         }
-        .input_box i {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-            color: #707070;
-        }
-        .input_box i.email,
-        .input_box i.password {
-            left: 0;
-        }
-        .input_box i.pw_hide {
-            right: 0;
-            font-size: 18px;
-            cursor: pointer;
-        }
+
         .button {
-            background: #7d2ae8;
-            margin-top: 30px;
             width: 100%;
-            padding: 10px 0;
-            border-radius: 10px;
+            padding: 10px;
+            background: #2575fc;
+            border: none;
             color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
+
         .button:hover {
-            background: #5c23a3;
+            background: #1e5bbf;
         }
     </style>
 </head>
 <body>
 
- <form id="adminLoginForm" action="{{ url_for('admin_login') }}" method="POST">
-    <h2>Admin Login</h2>
-    <div class="input_box">
-        <input type="email" placeholder="Admin email" name="email" required id="adminEmail" />
-        <i class="uil uil-envelope-alt email"></i>
+    <div class="form_container">
+        <h2>Admin Login</h2>
+        <form id="adminLoginForm" action="{{ url_for('admin_login') }}" method="POST">
+            <div class="input_box">
+                <label for="email">Email:</label>
+                <input type="email" name="email" placeholder="Enter your email" required />
+            </div>
+            <div class="input_box">
+                <label for="password">Password:</label>
+                <input type="password" name="password" placeholder="Enter your password" required />
+            </div>
+            <button class="button" type="submit">Login</button>
+        </form>
     </div>
-    <div class="input_box">
-        <input type="password" placeholder="Admin password" name="password" required id="adminPassword" />
-        <i class="uil uil-lock password"></i>
-        <i class="uil uil-eye-slash pw_hide" id="toggleAdminPassword"></i>
-    </div>
-    <button class="button" type="submit">Login Now</button>
-</form>
 
-
-    <script>
-        const formOpenBtn = document.querySelector("#form-open"),
-              adminLoginBtn = document.querySelector("#admin-login"),
-              loginForm = document.querySelector("#login-form"),
-              signupForm = document.querySelector("#signup-form"),
-              adminForm = document.querySelector("#admin-form"),
-              formCloseBtns = document.querySelectorAll(".form_close");
-
-        // Show login form by default
-        loginForm.classList.add("active");
-
-        // Toggle between forms
-        formOpenBtn.addEventListener("click", () => {
-            signupForm.classList.add("active");
-            loginForm.classList.remove("active");
-        });
-        adminLoginBtn.addEventListener("click", () => {
-            adminForm.classList.add("active");
-            loginForm.classList.remove("active");
-        });
-
-        // Close forms
-        formCloseBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                signupForm.classList.remove("active");
-                adminForm.classList.remove("active");
-                loginForm.classList.add("active");
-            });
-        });
-
-        // Signup form validation and submission
-        document.getElementById("signupForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const email = document.getElementById("signupEmail").value;
-            const password = document.getElementById("signupPassword").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                return;
-            }
-
-            // Here, you can integrate with backend API to handle the signup
-            console.log("Signup form submitted:", { email, password });
-        });
-
-        // Admin login form validation and submission
-        document.getElementById("adminLoginForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const email = document.getElementById("adminEmail").value;
-            const password = document.getElementById("adminPassword").value;
-
-            // Here, you can integrate with backend API to handle the admin login
-            console.log("Admin login form submitted:", { email, password });
-        });
-
-        // Normal login form validation and submission
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-
-            // Here, you can integrate with backend API to handle the login
-            console.log("Login form submitted:", { email, password });
-        });
-
-        // Toggle password visibility for signup and admin forms
-        document.getElementById("toggleSignupPassword").addEventListener("click", togglePasswordVisibility.bind(null, "signupPassword"));
-        document.getElementById("toggleConfirmPassword").addEventListener("click", togglePasswordVisibility.bind(null, "confirmPassword"));
-        document.getElementById("toggleAdminPassword").addEventListener("click", togglePasswordVisibility.bind(null, "adminPassword"));
-
-        function togglePasswordVisibility(id) {
-            const input = document.getElementById(id);
-            const type = input.getAttribute("type") === "password" ? "text" : "password";
-            input.setAttribute("type", type);
-        }
-    </script>
 </body>
 </html>

@@ -10,7 +10,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(to bottom, #8e44ad, #9b59b6); /* Purple gradient background */
+            background: linear-gradient(to bottom, #eef2f3, #d9e3f0);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,9 +27,6 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
 
         /* Header Section */
@@ -40,12 +37,12 @@
         .header h1 {
             font-size: 3rem;
             margin: 0;
-            color: #8e44ad; /* Purple color for header */
+            color: #333;
         }
 
         .header p {
             font-size: 1.2rem;
-            color: #6c3483; /* Slightly darker purple for text */
+            color: #555;
         }
 
         /* Admin Options Section */
@@ -58,13 +55,13 @@
         }
 
         .admin-option {
-            background: #f1f1f1; /* Light gray background for options */
-            color: #8e44ad; /* Purple text for options */
+            background: white;
+            color: #333;
             width: 300px;
             height: 200px;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
             text-align: center;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -72,7 +69,13 @@
 
         .admin-option:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0 15px 5px rgba(142, 68, 173, 0.5); /* Light purple glow */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-option img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
         }
 
         .admin-option h3 {
@@ -82,7 +85,7 @@
 
         .admin-option p {
             font-size: 1rem;
-            color: #6c3483; /* Darker purple for description */
+            color: #666;
         }
 
         /* Responsive Design */
@@ -110,18 +113,21 @@
         <div class="admin-options">
             <!-- Option 1: Check Teacher's OT -->
             <div class="admin-option" onclick="location.href='/admin-view-OT.html'">
+                <img src="images/camera.png" alt="Teacher OT Icon">
                 <h3>Check Teacher's OT</h3>
                 <p>View overtime details of teachers.</p>
             </div>
 
             <!-- Option 2: Generate Timetable -->
-            <div class="admin-option" onclick="location.href='{{ url_for('generate_timetable') }}'">
+            <div class="admin-option" onclick="location.href='/timetable.html'">
+                <img src="images/camera.png" alt="Generate Timetable Icon">
                 <h3>Generate Timetable</h3>
                 <p>Create a timetable automatically.</p>
             </div>
-            
-            <!-- Option 3: OCR Personalized Timetable -->
+
+            <!-- Option 3: OCR Personalized Timetable (Image Capture) -->
             <div class="admin-option" onclick="location.href='/OCR.html'">
+                <img src="images/camera.png" alt="OCR Icon">
                 <h3>OCR Personalized Timetable</h3>
                 <p>Generate teacher-specific timetables using OCR.</p>
             </div>
