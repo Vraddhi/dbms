@@ -16,24 +16,73 @@ time_slots = [
     "Friday 09:00-10:00", "Friday 10:00-11:00", "Friday 11:30-12:30", "Friday 12:30-1:30", "Friday 2:30-3:30", "Friday 3:30-4:30"
 ]
 
-def assign_time_slots(courses):
+
+def assign_time_slots(courses, semester_group):
     timetable = []
     available_slots = time_slots[:]
+    random.shuffle(available_slots)  # Randomize slots
+    
+    # Fetch already assigned slots for teachers across all semesters
+    teacher_schedule = {}
+    subject_daily_schedule = {}  # To track subjects per day
+
+    existing_timetables = db.timetable.find({})
+    
+    for timetable_entry in existing_timetables:
+        for course in timetable_entry['courses']:
+            teacher_id = course['teacher_id']
+            course_name = course['course_name']
+
+            # Track teacher schedule globally (across all semesters)
+            if teacher_id not in teacher_schedule:
+                teacher_schedule[teacher_id] = set()
+            teacher_schedule[teacher_id].update(course['assigned_slots'])
+            
+            # Track subject schedule by day
+            for slot in course['assigned_slots']:
+                day = slot.split()[0]
+                if course_name not in subject_daily_schedule:
+                    subject_daily_schedule[course_name] = set()
+                subject_daily_schedule[course_name].add(day)
 
     for course in courses:
         course_hours = int(course['hours_per_week'])
+        teacher_id = course['teacher_id']
+        course_name = course['course_name']
         assigned_slots = []
 
+        if teacher_id not in teacher_schedule:
+            teacher_schedule[teacher_id] = set()
+        if course_name not in subject_daily_schedule:
+            subject_daily_schedule[course_name] = set()
+
+        teacher_assigned_days = set()  # Track days teacher is already assigned
+
         for _ in range(course_hours):
-            if available_slots:
-                selected_slot = random.choice(available_slots)
-                available_slots.remove(selected_slot)
-                assigned_slots.append(selected_slot)
-            else:
-                flash('Not enough time slots available to assign all courses.', 'error')
+            random.shuffle(available_slots)  # Shuffle before each assignment
+            selected_slot = None
+            
+            for slot in available_slots:
+                day = slot.split()[0]
+
+                # Check constraints:
+                if (slot not in teacher_schedule[teacher_id]) and \
+                   (day not in subject_daily_schedule[course_name]) and \
+                   (day not in teacher_assigned_days):
+                    selected_slot = slot
+                    teacher_schedule[teacher_id].add(slot)
+                    subject_daily_schedule[course_name].add(day)
+                    teacher_assigned_days.add(day)
+                    available_slots.remove(slot)
+                    assigned_slots.append(slot)
+                    break
+
+            if not selected_slot:
+                flash(f'Not enough valid slots for {course["faculty_name"]} ({course["course_name"]})', 'error')
                 return None
 
         timetable.append({
+            'semester_group': semester_group,
             'course_name': course['course_name'],
             'faculty_name': course['faculty_name'],
             'teacher_id': course['teacher_id'],
@@ -75,7 +124,10 @@ def generate_timetable():
                     'hours_per_week': hours_per_week
                 })
 
-        timetable = assign_time_slots(courses)
+        # Determine semester group (odd/even)
+        semester_group = 'odd' if int(semester) % 2 != 0 else 'even'
+        
+        timetable = assign_time_slots(courses, semester_group)
         
         if timetable is None:
             return redirect(url_for('generate_timetable'))
@@ -83,16 +135,19 @@ def generate_timetable():
         timetable_entry = {
             'semester_type': semester_type,
             'semester': semester,
+            'semester_group': semester_group,
             'college_start_time': college_start_time,
             'college_end_time': college_end_time,
             'courses': timetable
         }
 
         db.timetable.insert_one(timetable_entry)
-        flash('Timetable generated successfully!', 'success')
+        flash('Timetable generated successfully without teacher or subject conflicts!', 'success')
         return redirect(url_for('dummy'))
 
     return render_template('timetable.html')
+
+
 
 @app.route('/dummy')
 def dummy():
