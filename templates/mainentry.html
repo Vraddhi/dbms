@@ -4,46 +4,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduFlow - Entry Page</title>
+
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary-color: #6B46C1;
+            --primary-dark: #553C9A;
+            --secondary-color: #9F7AEA;
+            --accent-color: #B794F4;
+            --text-light: #E9D8FD;
+            --white: #ffffff;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(to right, #cb4911, #54fc25);
-            color: #fff;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+
         .container {
-            text-align: center;
-            padding: 50px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+            margin: 20px;
         }
+
         .logo {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--text-light), var(--white));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .description {
             font-size: 1.2rem;
-            margin: 20px auto;
+            margin: 1.5rem auto;
+            line-height: 1.8;
+            color: var(--text-light);
             max-width: 700px;
-            line-height: 1.6;
         }
+
         .buttons {
-            margin-top: 30px;
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
         }
+
         .btn {
-            display: inline-block;
-            background: #ffffff;
-            color: #2575fc;
-            padding: 12px 25px;
-            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
             text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: background 0.3s, color 0.3s;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            min-width: 180px;
+            position: relative;
+            overflow: hidden;
         }
-        .btn:hover {
-            background: #2575fc;
-            color: #ffffff;
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .btn:hover:before {
+            transform: translateX(100%);
+        }
+
+        .btn-primary {
+            background: var(--white);
+            color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--text-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .description {
+                font-size: 1.1rem;
+                line-height: 1.6;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.8rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -54,8 +183,9 @@
             Simplify faculty schedule management and workload tracking with our intuitive platform. Effortlessly generate semester timetables, access personalized schedules, and track extra workloads. With OCR technology, convert scanned timetables into accurate digital data, saving time and reducing errors. Experience efficiency and precision like never before!
         </p>
         <div class="buttons">
-            <a href="/teacher-login" class="btn">Teacher Login</a>
-            <a href="/admin-login" class="btn">Admin Login</a>
+            <a href="/teacher-login" class="btn btn-primary">Teacher Login</a>
+            <a href="/teacher-signup" class="btn btn-secondary">Teacher Signup</a>
+            <a href="/admin-login" class="btn btn-secondary">Admin Login</a>
         </div>
     </div>
 </body>

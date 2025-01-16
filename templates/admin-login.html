@@ -7,9 +7,9 @@
     <style>
         /* General Styling */
         body {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
+            background: linear-gradient(to right, #D8B0F7, #F1E1FF); /* Soft pastel gradient */
             font-family: 'Poppins', sans-serif;
-            color: #fff;
+            color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,7 +19,7 @@
 
         .form_container {
             background: #fff;
-            padding: 55px;
+            padding: 40px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             color: #333;
@@ -31,7 +31,7 @@
         .form_container h2 {
             font-size: 24px;
             margin-bottom: 20px;
-            color: #2575fc;
+            color: #6A4C9C;  /* Soft pastel purple */
         }
 
         .input_box {
@@ -42,29 +42,32 @@
         .input_box input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #E0D1F9;  /* Pastel purple border */
             border-radius: 5px;
             font-size: 14px;
+            color: #6A4C9C;  /* Purple text color */
         }
 
         .input_box input:focus {
-            border: 2px solid #2575fc;
+            border: 2px solid #6A4C9C;  /* Purple border on focus */
+            outline: none;
         }
 
         .button {
             width: 100%;
             padding: 10px;
-            background: #2575fc;
+            background: #D1E1F9;  /* Pastel blue background */
             border: none;
-            color: #fff;
+            color: #6A4C9C;  /* Purple text */
             font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, color 0.3s;
         }
 
         .button:hover {
-            background: #1e5bbf;
+            background: #6A4C9C;  /* Purple background on hover */
+            color: #F1E1FF;  /* Light text on hover */
         }
     </style>
 </head>
@@ -74,11 +77,11 @@
         <h2>Admin Login</h2>
         <form id="adminLoginForm" action="{{ url_for('admin_login') }}" method="POST">
             <div class="input_box">
-                <label for="email">Email:</label>
+                <label for="email" style="color: #6A4C9C;">Email:</label>
                 <input type="email" name="email" placeholder="Enter your email" required />
             </div>
             <div class="input_box">
-                <label for="password">Password:</label>
+                <label for="password" style="color: #6A4C9C;">Password:</label>
                 <input type="password" name="password" placeholder="Enter your password" required />
             </div>
             <button class="button" type="submit">Login</button>

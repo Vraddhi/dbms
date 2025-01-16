@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, flash,session,jsonify
 from pymongo import MongoClient
+from werkzeug.security import generate_password_hash, check_password_hash
 import random
 
 app = Flask(__name__)
@@ -7,21 +9,26 @@ app.secret_key = 'your_secret_key'
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["DBMS_LAB"]
+overtime_collection = db["teacher_overtime"]
 
+# Define time slots as per your requirements
 time_slots = [
-    "Monday 09:00-10:00", "Monday 10:00-11:00", "Monday 11:30-12:30", "Monday 12:30-1:30", "Monday 2:30-3:30", "Monday 3:30-4:30",
-    "Tuesday 09:00-10:00", "Tuesday 10:00-11:00", "Tuesday 11:30-12:30", "Tuesday 12:30-1:30", "Tuesday 2:30-3:30", "Tuesday 3:30-4:30",
-    "Wednesday 09:00-10:00", "Wednesday 10:00-11:00", "Wednesday 11:30-12:30", "Wednesday 12:30-1:30", "Wednesday 2:30-3:30", "Wednesday 3:30-4:30",
-    "Thursday 09:00-10:00", "Thursday 10:00-11:00", "Thursday 11:30-12:30", "Thursday 12:30-1:30", "Thursday 2:30-3:30", "Thursday 3:30-4:30",
-    "Friday 09:00-10:00", "Friday 10:00-11:00", "Friday 11:30-12:30", "Friday 12:30-1:30", "Friday 2:30-3:30", "Friday 3:30-4:30"
+    {"slot_id": "A1", "start_time": "9:00 AM", "end_time": "10:00 AM"},
+    {"slot_id": "A2", "start_time": "10:00 AM", "end_time": "11:00 AM"},
+    {"slot_id": "A3", "start_time": "11:30 AM", "end_time": "12:30 PM"},
+    {"slot_id": "A4", "start_time": "12:30 PM", "end_time": "1:30 PM"},
+    {"slot_id": "A5", "start_time": "2:30 PM", "end_time": "3:30 PM"},
+    {"slot_id": "A6", "start_time": "3:30 PM", "end_time": "4:30 PM"},
+    {"slot_id": "B1", "start_time": "9:00 AM", "end_time": "11:00 AM"},
+    {"slot_id": "B2", "start_time": "11:30 AM", "end_time": "1:30 PM"},
+    {"slot_id": "B3", "start_time": "2:30 PM", "end_time": "4:30 PM"}
 ]
-
 
 def assign_time_slots(courses, semester_group):
     timetable = []
     available_slots = time_slots[:]
     random.shuffle(available_slots)  # Randomize slots
-    
+
     # Fetch already assigned slots for teachers across all semesters
     teacher_schedule = {}
     subject_daily_schedule = {}  # To track subjects per day
@@ -33,14 +40,15 @@ def assign_time_slots(courses, semester_group):
             teacher_id = course['teacher_id']
             course_name = course['course_name']
 
-            # Track teacher schedule globally (across all semesters)
             if teacher_id not in teacher_schedule:
                 teacher_schedule[teacher_id] = set()
-            teacher_schedule[teacher_id].update(course['assigned_slots'])
-            
-            # Track subject schedule by day
-            for slot in course['assigned_slots']:
-                day = slot.split()[0]
+
+            if 'assigned_slots' in course:
+                assigned_slot_ids = {slot['slot_id'] for slot in course['assigned_slots']}
+                teacher_schedule[teacher_id].update(assigned_slot_ids)
+
+            for slot in course.get('assigned_slots', []):
+                day = slot['slot_id'][0]  # Extract day (A1 → A)
                 if course_name not in subject_daily_schedule:
                     subject_daily_schedule[course_name] = set()
                 subject_daily_schedule[course_name].add(day)
@@ -56,21 +64,20 @@ def assign_time_slots(courses, semester_group):
         if course_name not in subject_daily_schedule:
             subject_daily_schedule[course_name] = set()
 
-        teacher_assigned_days = set()  # Track days teacher is already assigned
+        teacher_assigned_days = set()
 
         for _ in range(course_hours):
             random.shuffle(available_slots)  # Shuffle before each assignment
             selected_slot = None
-            
-            for slot in available_slots:
-                day = slot.split()[0]
 
-                # Check constraints:
-                if (slot not in teacher_schedule[teacher_id]) and \
+            for slot in available_slots:
+                day = slot['slot_id'][0]  # Extract day (A1 → A)
+
+                if (slot['slot_id'] not in teacher_schedule[teacher_id]) and \
                    (day not in subject_daily_schedule[course_name]) and \
                    (day not in teacher_assigned_days):
                     selected_slot = slot
-                    teacher_schedule[teacher_id].add(slot)
+                    teacher_schedule[teacher_id].add(slot['slot_id'])
                     subject_daily_schedule[course_name].add(day)
                     teacher_assigned_days.add(day)
                     available_slots.remove(slot)
@@ -82,7 +89,6 @@ def assign_time_slots(courses, semester_group):
                 return None
 
         timetable.append({
-            'semester_group': semester_group,
             'course_name': course['course_name'],
             'faculty_name': course['faculty_name'],
             'teacher_id': course['teacher_id'],
@@ -96,58 +102,30 @@ def admin_dashboard():
     return render_template('admin-entry.html')
 
 @app.route('/check_teacher_ot')
-def check_teacher_ot():
-    teacher_ots = db.teachers.find()
-    return render_template('admin-view-OT.html', teachers=teacher_ots)
-
-@app.route("/generate_timetable", methods=['GET', 'POST'])
+@app.route('/generate_timetable', methods=['POST'])
 def generate_timetable():
-    if request.method == 'POST':
-        semester_type = request.form.get('sem-type')
-        semester = request.form.get('semester')
-        college_start_time = request.form.get('college-start-time')
-        college_end_time = request.form.get('college-end-time')
-        num_courses = int(request.form.get('num-courses', 0))
+    data = request.json
+    semester_type = data.get('semester_type')
+    semester = data.get('semester')
+    semester_group = data.get('semester_group')
+    courses = data.get('courses')
 
-        courses = []
-        for i in range(num_courses):
-            course_name = request.form.get(f'course_{i}')
-            faculty_name = request.form.get(f'faculty_{i}')
-            teacher_id = request.form.get(f'teacher_id_{i}')
-            hours_per_week = request.form.get(f'hours_per_week_{i}')
-            
-            if course_name and faculty_name and teacher_id and hours_per_week:
-                courses.append({
-                    'course_name': course_name,
-                    'faculty_name': faculty_name,
-                    'teacher_id': teacher_id,
-                    'hours_per_week': hours_per_week
-                })
+    timetable = assign_time_slots(courses, semester_group)
+    if timetable is None:
+        return jsonify({"error": "Unable to assign time slots due to conflicts."}), 400
+    
+    for course in timetable:
+        course.pop('semester_group', None)
 
-        # Determine semester group (odd/even)
-        semester_group = 'odd' if int(semester) % 2 != 0 else 'even'
-        
-        timetable = assign_time_slots(courses, semester_group)
-        
-        if timetable is None:
-            return redirect(url_for('generate_timetable'))
+    timetable_entry = {
+        'semester_type': semester_type,
+        'semester': semester,
+        'semester_group': semester_group,
+        'courses': timetable
+    }
+    db.timetable.insert_one(timetable_entry)
 
-        timetable_entry = {
-            'semester_type': semester_type,
-            'semester': semester,
-            'semester_group': semester_group,
-            'college_start_time': college_start_time,
-            'college_end_time': college_end_time,
-            'courses': timetable
-        }
-
-        db.timetable.insert_one(timetable_entry)
-        flash('Timetable generated successfully without teacher or subject conflicts!', 'success')
-        return redirect(url_for('dummy'))
-
-    return render_template('timetable.html')
-
-
+    return jsonify({"message": "Timetable generated successfully", "timetable": timetable}), 201
 
 @app.route('/dummy')
 def dummy():
@@ -177,23 +155,71 @@ def admin_login():
     return render_template('admin-login.html')
 
 @app.route('/teacher-login', methods=['GET', 'POST'])
-def login():
+def teacher_login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
 
+        # Find the user in the database
         user = db.users.find_one({"email": email})
 
-        if user and password == user['password']:
-            return redirect(url_for('dashboard'))
+        # Verify the password correctly
+        if user and check_password_hash(user['password'], password):  # Compare hashed password correctly
+            session["email"] = email  # Store email in session
+            flash('Login successful', 'success')
+            return redirect(url_for('dashboard'))  # Redirect to dashboard
         else:
             flash('Invalid email or password', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('teacher_login'))  # Redirect to login page
+
     return render_template('teacher-login.html')
+
+@app.route('/teacher-signup', methods=['GET', 'POST'])
+def teacher_signup():
+    if request.method == 'POST':
+        # Get form data
+        email = request.form['email'].strip().lower()
+        password = request.form['password']
+        faculty_id = request.form['faculty_id'].strip()
+        name = request.form['name'].strip()
+        department = request.form['department'].strip()
+        roles = request.form['roles'].strip()
+
+        try:
+            # Check for duplicate user
+            existing_user = db.users.find_one({"email": email})
+            if existing_user:
+                flash('A user with this email already exists. Please log in.', 'error')
+                return redirect(url_for('teacher_login'))
+
+            # Hash the password
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+            # Prepare data to insert into MongoDB
+            user_data = {
+                'email': email,
+                'password': hashed_password,
+                'faculty_id': faculty_id,
+                'name': name,
+                'department': department,
+                'roles': roles
+            }
+
+            try:
+                db.users.insert_one(user_data) 
+                return redirect(url_for('teacher_login'))
+            except:
+                print(".")
+
+        except Exception as e:
+            print(f"Error during signup: {str(e)}")
+            flash(f"An error occurred while creating your account: {str(e)}", 'error')
+            return redirect(url_for('teacher_signup'))
+    return render_template('teacher-signup.html')
 
 @app.route('/dashboard')
 def dashboard():
-    return 'User Dashboard'
+    return render_template('teacher-dashboard.html')
 
 @app.route('/success')
 def success():
@@ -231,6 +257,62 @@ def add_course():
 @app.route("/")
 def entry():
     return render_template('mainentry.html')
+
+@app.route('/log_overtime', methods=['POST'])
+def log_overtime():
+    if 'email' not in session:
+        return jsonify({"error": "Unauthorized"}), 401  # User must be logged in
+
+    data = request.json
+    date = data.get('date')
+    start_time = data.get('startTime')
+    end_time = data.get('endTime')
+    description = data.get('description')
+    email = session['email']  # Get logged-in faculty email
+
+    if not date or not start_time or not end_time or not description:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    start_datetime = datetime.strptime(f"{date} {start_time}", "%Y-%m-%d %H:%M")
+    end_datetime = datetime.strptime(f"{date} {end_time}", "%Y-%m-%d %H:%M")
+
+    if end_datetime <= start_datetime:
+        return jsonify({"error": "End time must be after start time"}), 400
+
+    hours_worked = (end_datetime - start_datetime) / timedelta(hours=1)
+
+    overtime_entry = {
+        "email": email,
+        "date": date,
+        "start_time": start_time,
+        "end_time": end_time,
+        "hours_worked": hours_worked,
+        "description": description
+    }
+
+    overtime_collection.insert_one(overtime_entry)  # Save to MongoDB
+
+    return jsonify({"message": "Overtime logged successfully"})
+
+
+@app.route('/get_overtime_events', methods=['GET'])
+def get_overtime_events():
+    if 'email' not in session:
+        return jsonify({"error": "Unauthorized"}), 401  # User must be logged in
+
+    email = session['email']
+    date = request.args.get('date')
+
+    # Query MongoDB for records matching faculty's email & selected date
+    records = list(overtime_collection.find({"email": email, "date": date}, {"_id": 0}))
+
+    return jsonify(records)
+ 
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('teacher_login'))
 
 if __name__ == "__main__":
     app.run(debug=True)

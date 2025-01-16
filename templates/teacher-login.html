@@ -7,9 +7,9 @@
     <style>
         /* General Styling */
         body {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
+            background: linear-gradient(to right, #D8BFD8, #E6E6FA);
             font-family: 'Poppins', sans-serif;
-            color: #fff;
+            color: #4B0082;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,11 +18,11 @@
         }
 
         .form_container {
-            background: #fff;
-            padding: 55px;
+            background: #FAF0FF;
+            padding: 50px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            color: #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: #4B0082;
             width: 100%;
             max-width: 400px;
             text-align: center;
@@ -31,7 +31,7 @@
         .form_container h2 {
             font-size: 24px;
             margin-bottom: 20px;
-            color: #2575fc;
+            color: #6A5ACD;
         }
 
         .input_box {
@@ -42,19 +42,20 @@
         .input_box input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #DDA0DD;
             border-radius: 5px;
             font-size: 14px;
         }
 
         .input_box input:focus {
-            border: 2px solid #2575fc;
+            border: 2px solid #9370DB;
+            outline: none;
         }
 
         .button {
             width: 100%;
             padding: 10px;
-            background: #2575fc;
+            background: #9370DB;
             border: none;
             color: #fff;
             font-size: 16px;
@@ -64,7 +65,7 @@
         }
 
         .button:hover {
-            background: #1e5bbf;
+            background: #6A5ACD;
         }
     </style>
 </head>
@@ -72,7 +73,7 @@
 
     <div class="form_container">
         <h2>Teacher Login</h2>
-        <form id="teacherLoginForm" action="{{ url_for('login') }}" method="POST">
+        <form id="teacherLoginForm" action="/teacher-login" method="POST">
             <div class="input_box">
                 <label for="email">Email:</label>
                 <input type="email" name="email" placeholder="Enter your email" required />

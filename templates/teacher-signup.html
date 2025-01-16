@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Login</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #F1E6F5;  /* Light pastel purple background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+        color: #6A4C9C;  /* Pastel purple text color */
+        margin-top: 80px;  /* Increased gap above the text */
+        margin-bottom: 30px; /* Added a bit more space below the text */
+        font-size: 32px;     /* Increased font size for better visibility */
+        line-height: 1.4;    /* Improved line spacing */
+        word-break: break-word; /* Ensure long words wrap to the next line if needed */
+    }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #6A4C9C;  /* Pastel purple */
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .form-group input:focus {
+            border-color: #6A4C9C; /* Highlight on focus */
+            outline: none;
+        }
+
+        .error-message, .server-error-message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+        }
+
+        .btn {
+            background-color: #6A4C9C;  /* Pastel purple */
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #5b3d8c; /* Slightly darker pastel purple on hover */
+        }
+
+        .signup-link p {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #6A4C9C;  /* Pastel purple */
+            text-decoration: none;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function validateForm(event) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const facultyId = document.getElementById('faculty_id').value;
+            const name = document.getElementById('name').value;
+            const department = document.getElementById('department').value;
+            const roles = document.getElementById('roles').value;
+            const errorMessage = document.getElementById('error-message');
+
+            // Clear previous error messages
+            errorMessage.style.display = 'none';
+
+            // Basic email validation
+            if (!email.endsWith('@rvce.edu.in')) {
+                event.preventDefault(); // Prevent form submission
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = "Please provide a valid RVCE email ID (e.g., example@rvce.edu.in).";
+                return;
+            }
+
+            // Password length check
+            if (password.length < 6) {
+                event.preventDefault();
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = "Password must be at least 6 characters long.";
+                return;
+            }
+
+            // Check if password contains at least one uppercase, one lowercase, and one digit
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+            if (!passwordRegex.test(password)) {
+                event.preventDefault();
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = "Password must contain at least one uppercase letter, one lowercase letter, and one number.";
+                return;
+            }
+
+            // Check if password and confirm password match
+            if (password !== confirmPassword) {
+                event.preventDefault();
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = "Passwords do not match.";
+                return;
+            }
+
+            // Ensure all fields are filled out
+            if (!facultyId || !name || !department || !roles) {
+                event.preventDefault();
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = "Please fill out all fields.";
+                return;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Teacher Signup</h1>
+        <form action="/teacher-signup" method="POST" onsubmit="validateForm(event)">
+            <!-- Client-side error message -->
+            <div id="error-message" class="error-message"></div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="faculty_id">Faculty ID</label>
+                <input type="text" id="faculty_id" name="faculty_id" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="department">Department</label>
+                <input type="text" id="department" name="department" required>
+            </div>
+            <div class="form-group">
+                <label for="roles">Roles</label>
+                <input type="text" id="roles" name="roles" required>
+            </div>
+
+            <button type="submit" class="btn">Signup</button>
+        </form>
+    </div>
+</body>
+</html>

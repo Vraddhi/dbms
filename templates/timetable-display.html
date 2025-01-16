@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable</title>
+    <style>
+        body {
+            background-color: #f0f8ff; /* Pastel blue background */
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #4e73df;
+        }
+
+        label {
+            font-size: 1.2em;
+            color: #4e73df;
+        }
+
+        select, button {
+            font-size: 1em;
+            padding: 10px;
+            margin-top: 10px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        select:focus, button:focus {
+            outline: none;
+            border-color: #4e73df;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #e6f0ff;
+            color: #4e73df;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        .no-course {
+            color: #888;
+        }
+
+        .submit-btn {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+            border: none;
+        }
+
+        .submit-btn:hover {
+            background-color: #355c9c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Timetable</h2>
+
+        <form method="GET" action="/">
+            <label for="semester">For which semester?</label>
+            <select name="semester" id="semester">
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="3">Semester 3</option>
+                <option value="4">Semester 4</option>
+                <option value="5">Semester 5</option>
+                <option value="6">Semester 6</option>
+                <option value="7">Semester 7</option>
+                <option value="8">Semester 8</option>
+            </select>
+
+            <button type="submit" class="submit-btn">Get Timetable</button>
+        </form>
+
+        {% if timetable %}
+        <h3>Timetable for Semester {{ semester }}</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time Slot</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in range(1, 9) %}
+                    <tr>
+                        <td>Slot {{ slot }}</td>
+                        {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+                            <td>
+                                {% set course_found = false %}
+                                {% for course in timetable %}
+                                    {% if course['slot'] == slot and course['day'] == day %}
+                                        <strong>{{ course['course_name'] }}</strong><br>
+                                        {{ course['faculty_name'] }}<br>
+                                        {{ course['hours_per_week'] }} hrs/week
+                                        {% set course_found = true %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if not course_found %}
+                                    <span class="no-course">No Course</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No timetable available for the selected semester.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

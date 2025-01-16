@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #8B5CF6;
+            --primary-light: #A78BFA;
+            --primary-dark: #7C3AED;
+            --primary-bg: #EDE9FE;
+            --danger-color: #f44336;
+            --danger-dark: #d32f2f;
+            --background-color: #F9FAFB;
+            --shadow: 0 4px 6px rgba(139, 92, 246, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        #calendar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        /* FullCalendar Customization */
+        .fc-daygrid-day.has-overtime {
+            background-color: var(--primary-bg) !important;
+        }
+
+        .fc-daygrid-day.has-overtime .fc-daygrid-day-number {
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .fc .fc-button-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .fc .fc-button-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .fc .fc-button-primary:not(:disabled).fc-button-active,
+        .fc .fc-button-primary:not(:disabled):active {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .fc-daygrid-day:hover {
+            background-color: var(--primary-bg);
+            cursor: pointer;
+        }
+
+        .logout-button {
+            background-color: var(--primary-dark);
+            padding: 0.8rem 1.5rem;
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            box-shadow: var(--shadow);
+        }
+
+        .close {
+            float: right;
+            font-size: 1.8rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--danger-color);
+        }
+
+        #overtimeDetails {
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: var(--primary-bg);
+        }
+
+        #addOvertimeForm form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        input[type="time"],
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="time"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .input-error {
+            border-color: var(--danger-color);
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        button[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        button[type="button"] {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        button[type="button"]:hover {
+            background-color: #d1d5db;
+        }
+
+        #addOvertimeButton {
+            background-color: var(--primary-color);
+            color: white;
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #addOvertimeButton:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+                padding: 1.5rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Welcome, {{ email }}</h1>
+            <a href="/logout" class="logout-button">Logout</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Overtime Modal -->
+    <div id="overtimeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Extra Works for <span id="selectedDateDisplay"></span></h2>
+            <div id="overtimeDetails">
+                <h3>Extra Works Records</h3>
+                <div id="overtimeTable"></div>
+            </div>
+            <button id="addOvertimeButton" onclick="showAddOvertimeForm()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Extra Works
+            </button>
+
+            <div id="addOvertimeForm" style="display: none;">
+                <h3>Track Extra Works</h3>
+                <form id="overtimeForm">
+                    <div>
+                        <label for="startTime">Start Time:</label>
+                        <input type="time" id="startTime" name="startTime" required>
+                        <div class="error-message" id="startTimeError"></div>
+                    </div>
+                    <div>
+                        <label for="endTime">End Time:</label>
+                        <input type="time" id="endTime" name="endTime" required>
+                        <div class="error-message" id="endTimeError"></div>
+                    </div>
+                    <div>
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description" required placeholder="Specify your work."></textarea>
+                        <div class="error-message" id="descriptionError"></div>
+                    </div>
+                    <input type="hidden" id="selectedDate" name="selectedDate">
+                    <div class="button-group">
+                        <button type="submit">Save Entry</button>
+                        <button type="button" onclick="closeAddOvertimeForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let calendar;
+        let overtimeDates = new Set();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth'
+                },
+                height: 'auto',
+                dayCellDidMount: function(arg) {
+                    if (overtimeDates.has(arg.date.toISOString().split('T')[0])) {
+                        arg.el.classList.add('has-overtime');
+                    }
+                },
+                dateClick: function(info) {
+                var selectedDate = new Date(info.dateStr);
+    if (selectedDate.getDay() === 0) { // Sunday is represented by 0
+        alert("Sundays are not included in college working days.");
+        return;
+    }
+                    document.getElementById('overtimeModal').style.display = 'block';
+                    var selectedDate = info.dateStr;
+                    document.getElementById('selectedDate').value = selectedDate;
+                    document.getElementById('selectedDateDisplay').textContent = selectedDate;
+                    fetchOvertimeEvents(selectedDate);
+                },
+                datesSet: function(arg) {
+                    fetchOvertimeDates(arg.start, arg.end);
+                }
+               
+
+            });
+            calendar.render();
+        });
+
+        function fetchOvertimeDates(start, end) {
+            $.ajax({
+                url: `/get_overtime_dates?start=${start.toISOString()}&end=${end.toISOString()}`,
+                type: 'GET',
+                success: function(dates) {
+                    overtimeDates = new Set(dates);
+                    calendar.render();
+                },
+                error: function() {
+                    console.error('Error fetching overtime dates');
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('overtimeModal').style.display = 'none';
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById('overtimeForm').reset();
+            clearErrors();
+        }
+
+        function clearErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            const inputElements = document.querySelectorAll('input, textarea');
+
+            errorElements.forEach(element => {
+                element.style.display = 'none';
+                element.textContent = '';
+            });
+
+            inputElements.forEach(element => {
+                element.classList.remove('input-error');
+            });
+        }
+
+        function validateForm() {
+            let isValid = true;
+            clearErrors();
+
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const description = document.getElementById('description').value;
+
+            if (!startTime) {
+                showError('startTime', 'Start time is required');
+                isValid = false;
+            }
+
+            if (!endTime) {
+                showError('endTime', 'End time is required');
+                isValid = false;
+            } else if (endTime <= startTime) {
+                showError('endTime', 'End time must be after start time');
+                isValid = false;
+            }
+
+            if (!description) {
+                showError('description', 'Description is required');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}Error`);
+            const inputElement = document.getElementById(fieldId);
+
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            inputElement.classList.add('input-error');
+        }
+
+         function fetchOvertimeEvents(date) {
+            $.ajax({
+                url: `/get_overtime_events?date=${date}`,
+                type: 'GET',
+                success: function(events) {
+                    let table = `<table><tr><th>Start Time</th><th>End Time</th><th>Description</th><th>Hours</th></tr>`;
+                    if (events.length > 0) {
+                        events.forEach(event => {
+                            table += `<tr>
+                                        <td>${event.start_time}</td>
+                                        <td>${event.end_time}</td>
+                                        <td>${event.description}</td>
+                                        <td>${event.hours_worked}</td>
+                                      </tr>`;
+                        });
+                    } else {
+                        table += `<tr><td colspan="4">No overtime logged.</td></tr>`;
+                    }
+                    table += `</table>`;
+                    document.getElementById('overtimeTable').innerHTML = table;
+                },
+                error: function() {
+                    alert('Error fetching overtime records');
+                }
+            });
+        }
+
+        function showAddOvertimeForm() {
+            document.getElementById('overtimeDetails').style.display = 'none';
+            document.getElementById('addOvertimeForm').style.display = 'block';
+            resetForm();
+        }
+
+        function closeAddOvertimeForm() {
+            document.getElementById('overtimeDetails').style.display = 'block';
+            document.getElementById('addOvertimeForm').style.display = 'none';
+            resetForm();
+        }
+
+        $('#overtimeForm').submit(function(event) {
+            event.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            var formData = {
+                date: $('#selectedDate').val(),
+                startTime: $('#startTime').val(),
+                endTime: $('#endTime').val(),
+                description: $('#description').val()
+            };
+
+            $.ajax({
+                url: '/log_overtime',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function() {
+                    fetchOvertimeEvents(formData.date);
+                    closeAddOvertimeForm();
+                },
+                error: function() {
+                    alert('Error logging overtime');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
