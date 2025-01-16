@@ -3,6 +3,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash,sess
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
+from PIL import Image
+import pytesseract
+import os
+import re
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -10,6 +14,19 @@ app.secret_key = 'your_secret_key'
 client = MongoClient("mongodb://localhost:27017/")
 db = client["DBMS_LAB"]
 overtime_collection = db["teacher_overtime"]
+
+#this is ocr thing
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 
 # Define time slots as per your requirements
 time_slots = [
@@ -101,6 +118,164 @@ def assign_time_slots(courses, semester_group):
 def admin_dashboard():
     return render_template('admin-entry.html')
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# this is OCR
+@app.route('/upload_timetable', methods=['POST'])
+def upload_timetable():
+    if 'timetable' not in request.files:
+        flash('No file part', 'error')
+        return redirect(url_for('ocr_timetable'))
+
+    file = request.files['timetable']
+    if file.filename == '':
+        flash('No selected file', 'error')
+        return redirect(url_for('ocr_timetable'))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        try:
+            # OCR Processing
+            text = pytesseract.image_to_string(Image.open(filepath))
+            flash("OCR Text Extraction Successful.", "info")
+            # Parse and insert timetable
+            timetable_data = parse_timetable(text)
+            if timetable_data and 'courses' in timetable_data:
+                result = db.timetable.insert_one(timetable_data)
+                flash(f"Timetable inserted successfully with ID {result.inserted_id}.", "success")
+            else:
+                flash("No valid timetable data extracted.", "error")
+        except Exception as e:
+            flash(f"Error during OCR processing: {e}", "error")
+    else:
+        flash("Invalid file format. Please upload an image file.", "error")
+
+    return redirect(url_for('ocr_timetable'))
+
+def parse_timetable(ocr_text):
+    try:
+        timetable = []
+
+        # Patterns
+        day_pattern = r"\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"
+        time_slot_pattern = r"\b(\d{1,2}:\d{2}\s*[-~]\s*\d{1,2}:\d{2})\b"
+        course_code_pattern = r"\b[A-Z]+\d+[A-Z]+\b"
+
+        # Split into lines
+        lines = ocr_text.split("\n")
+        current_day = None
+        current_time_slots = []
+        current_courses = []
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue  # Skip empty lines
+
+            # Detect day
+            day_match = re.search(day_pattern, line, re.IGNORECASE)
+            if day_match:
+                current_day = day_match.group().capitalize()
+                print(f"Found Day: {current_day}")
+                continue
+
+            # Detect time slots
+            time_slots = re.findall(time_slot_pattern, line)
+            if time_slots:
+                current_time_slots = time_slots
+                print(f"Found Time Slots: {current_time_slots}")
+                continue
+
+            # Detect course codes
+            course_codes = re.findall(course_code_pattern, line)
+            if course_codes:
+                if not current_time_slots:  # Handle missing time slots
+                    current_time_slots = ["Unknown"] * len(course_codes)
+                for course_code in course_codes:
+                    # Match each course with the corresponding time slot
+                    for time_slot in current_time_slots:
+                        timetable.append({
+                            'course_code': course_code.strip(),
+                            'day': current_day if current_day else "Unknown",
+                            'time_slot': time_slot.strip() if time_slot else "Unknown"
+                        })
+                print(f"Added Courses: {course_codes} for Day: {current_day or 'Unknown'}")
+
+        return {'courses': timetable}
+    except Exception as e:
+        print(f"Error during OCR processing: {e}")
+        return {'courses': []}
+    
+@app.route('/ocr')  # This will be the URL path
+def ocr_page():
+    return render_template('OCR.html')  # This looks for OCR.html in the 'templates' folder
+
+@app.route('/personalized_timetable')
+def personalized_timetable():
+    # Get the course code from the query parameters
+    course_code = request.args.get('course_code')
+    
+    if not course_code:
+        return "Course code is missing", 400
+
+    # Query the MongoDB collection for the timetable matching the course code
+    timetable = list(timetable_collection.find({'course_code': course_code}))
+    
+    if not timetable:
+        return "No timetable found for the provided course code.", 404
+    
+    # Pass the timetable data and course code to the template
+    return render_template('personalized_timetable.html', timetable=timetable, course_code=course_code)
+
+@app.route("/ocr_timetable", methods=['GET', 'POST'])
+def ocr_timetable():
+    if request.method == 'POST':
+        if 'timetable' not in request.files:
+            flash('No file part in the request', 'error')
+            return redirect(url_for('ocr_timetable'))
+
+        file = request.files['timetable']
+        if file.filename == '':
+            flash('No file selected for upload', 'error')
+            return redirect(url_for('ocr_timetable'))
+
+        if file and allowed_file(file.filename):
+            try:
+                # Save the uploaded file
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+
+                # Perform OCR on the uploaded file
+                text = pytesseract.image_to_string(Image.open(filepath))
+                print("Extracted OCR Text:", text)
+
+                # Parse OCR text into timetable data
+                timetable_data = parse_timetable(text)
+                print("Parsed Timetable Data:", timetable_data)
+
+                # Insert timetable data into MongoDB
+                if timetable_data and 'courses' in timetable_data:
+                    result = db.timetable.insert_one(timetable_data)
+                    print("Inserted Timetable ID:", result.inserted_id)
+                    flash('Timetable uploaded and processed successfully!', 'success')
+                else:
+                    flash('Failed to extract meaningful timetable data.', 'error')
+
+            except Exception as e:
+                print("Error during OCR processing:", e)
+                flash('An error occurred while processing the timetable.', 'error')
+        else:
+            flash('Invalid file type. Please upload a valid image file.', 'error')
+
+        return redirect(url_for('ocr_timetable'))
+
+    # Render the OCR upload page for GET requests
+    return render_template('OCR.html')
+# till here
 @app.route('/check_teacher_ot')
 @app.route('/generate_timetable', methods=['POST'])
 def generate_timetable():
@@ -130,14 +305,6 @@ def generate_timetable():
 @app.route('/dummy')
 def dummy():
     return render_template('dummy.html')
-
-@app.route("/ocr_timetable", methods=['GET', 'POST'])
-def ocr_timetable():
-    if request.method == 'POST':
-        flash('OCR Timetable generated successfully!', 'success')
-        return redirect(url_for('success'))
-
-    return render_template('OCR.html')
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
