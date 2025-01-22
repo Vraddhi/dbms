@@ -10,56 +10,41 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(to bottom, #D8B0F7, #F1E1FF); /* Soft pastel purple gradient */
+            background: linear-gradient(to bottom, #D8B0F7, #F1E1FF);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
 
-        /* Full Page Container */
         .container {
             width: 90vw;
             max-width: 1200px;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: #fff; /* White background for container */
+            background: #fff;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header Section */
-        .header {
+        h1 {
+            color: #6A4C9C;
+            margin-bottom: 20px;
+        }
+
+        .admin-options, .timetables-section {
             margin-bottom: 40px;
         }
 
-        .header h1 {
-            font-size: 3rem;
-            margin: 0;
-            color: #6A4C9C; /* Pastel purple color for header */
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            color: #A36FBF; /* Slightly darker pastel purple for text */
-        }
-
-        /* Admin Options Section */
         .admin-options {
             display: flex;
             justify-content: center;
             gap: 30px;
-            margin-top: 20px;
             flex-wrap: wrap;
         }
 
         .admin-option {
-            background: #F6F6F6; /* Light gray background for options */
-            color: #6A4C9C; /* Pastel purple text for options */
+            background: #F6F6F6;
+            color: #6A4C9C;
             width: 300px;
             height: 200px;
             padding: 20px;
@@ -72,7 +57,7 @@
 
         .admin-option:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0 15px 5px rgba(142, 68, 173, 0.5); /* Light purple glow */
+            box-shadow: 0 0 15px 5px rgba(142, 68, 173, 0.5);
         }
 
         .admin-option h3 {
@@ -82,10 +67,52 @@
 
         .admin-option p {
             font-size: 1rem;
-            color: #A36FBF; /* Darker pastel purple for description */
+            color: #A36FBF;
         }
 
-        /* Responsive Design */
+        .timetable {
+            margin: 20px 0;
+            padding: 10px;
+            background: #F6F6F6;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .timetable h3 {
+            color: #6A4C9C;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+
+        .buttons button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .view-btn {
+            background: #6A4C9C;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #E57373;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #53387C;
+        }
+
+        .delete-btn:hover {
+            background: #D64545;
+        }
+
         @media (max-width: 768px) {
             .admin-options {
                 flex-direction: column;
@@ -101,31 +128,73 @@
 <body>
     <div class="container">
         <!-- Header -->
-        <div class="header">
-            <h1>Admin Dashboard</h1>
-            <p>Select an option below</p>
-        </div>
+        <h1>Admin Dashboard</h1>
 
         <!-- Admin Options -->
         <div class="admin-options">
-            <!-- Option 1: Check Teacher's OT -->
-            <div class="admin-option" onclick="location.href='/admin-view-OT.html'">
+            <div class="admin-option" onclick="location.href='{{url_for('admin_view_ot')}}'">
                 <h3>Check Teacher's OT</h3>
                 <p>View overtime details of teachers.</p>
             </div>
-
-            <!-- Option 2: Generate Timetable -->
             <div class="admin-option" onclick="location.href='{{ url_for('generate_timetable') }}'">
                 <h3>Generate Timetable</h3>
                 <p>Create a timetable automatically.</p>
             </div>
-            
-            <!-- Option 3: OCR Personalized Timetable -->
             <div class="admin-option" onclick="location.href='{{ url_for('ocr_timetable') }}'">
                 <h3>OCR Personalized Timetable</h3>
                 <p>Generate teacher-specific timetables using OCR.</p>
             </div>
         </div>
+
+        <!-- Timetables Section -->
+        <div class="timetables-section">
+            <h2>Available Timetables</h2>
+            <div id="timetables">
+                <!-- Timetable data will be populated here dynamically -->
+            </div>
+        </div>
     </div>
+
+    <script>
+        async function fetchTimetables() {
+            const response = await fetch('/fetch_timetables');
+            const data = await response.json();
+            const timetablesDiv = document.getElementById('timetables');
+
+            if (data.timetables.length === 0) {
+                timetablesDiv.innerHTML = '<p>No timetables available.</p>';
+                return;
+            }
+
+            data.timetables.forEach(tt => {
+                const ttDiv = document.createElement('div');
+                ttDiv.classList.add('timetable');
+                ttDiv.innerHTML = `
+                    <h3>Semester ${tt.semester} Timetable</h3>
+                    <div class="buttons">
+                        <button class="view-btn" onclick="viewTimetable('${tt._id}')">View</button>
+                        <button class="delete-btn" onclick="deleteTimetable('${tt._id}')">Delete</button>
+                    </div>
+                `;
+                timetablesDiv.appendChild(ttDiv);
+            });
+        }
+
+        function viewTimetable(id) {
+            window.location.href = `/view_timetable/${id}`;
+        }
+
+        async function deleteTimetable(id) {
+            const response = await fetch(`/delete_timetable/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                alert('Timetable deleted successfully.');
+                location.reload();
+            } else {
+                alert('Failed to delete timetable.');
+            }
+        }
+
+        fetchTimetables();
+    </script>
 </body>
 </html>

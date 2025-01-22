@@ -279,7 +279,7 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <h1>Welcome, {{ email }}</h1>
+            <h1>Timetable and Workload Management</h1>
             <a href="/logout" class="logout-button">Logout</a>
         </div>
     </div>
@@ -292,7 +292,7 @@
     <div id="overtimeModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Extra Works for <span id="selectedDateDisplay"></span></h2>
+            <h2><span id="selectedDateDisplay"></span></h2>
             <div id="overtimeDetails">
                 <h3>Extra Works Records</h3>
                 <div id="overtimeTable"></div>
@@ -367,7 +367,7 @@
                 datesSet: function(arg) {
                     fetchOvertimeDates(arg.start, arg.end);
                 }
-               
+
 
             });
             calendar.render();
@@ -454,7 +454,7 @@
                 url: `/get_overtime_events?date=${date}`,
                 type: 'GET',
                 success: function(events) {
-                    let table = `<table><tr><th>Start Time</th><th>End Time</th><th>Description</th><th>Hours</th></tr>`;
+                    let table = `<table><tr><th>Start Time</th><th>End Time</th><th>Description</th><th>Total time</th></tr>`;
                     if (events.length > 0) {
                         events.forEach(event => {
                             table += `<tr>

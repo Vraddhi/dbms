@@ -1,0 +1,21 @@
+{
+  "name": "dbms-flask-pymango",
+  "version": "1.0.0",
+  "description": "This DBMS project automates the generation of personalized timetables for teachers. Using OCR technology, it extracts data from existing timetables and customizes schedules based on course codes and teacher names. Teachers can log in to view their schedules and record overtime hours. An admin panel allows administrators to manage teacher profiles and timetable configurations efficiently.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vraddhi/dbms.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Vraddhi/dbms/issues"
+  },
+  "homepage": "https://github.com/Vraddhi/dbms#readme"
+}

@@ -20,7 +20,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         h2, h3 {
-            color: #6a4c9c; /* Pastel purple color */
+            color: #333;
         }
         .form-group {
             margin-bottom: 20px;
@@ -29,7 +29,6 @@
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
-            color: #6a4c9c; /* Pastel purple for labels */
         }
         input, select {
             width: 100%;
@@ -39,7 +38,7 @@
             border-radius: 4px;
         }
         button {
-            background-color: #6a4c9c; /* Pastel purple for button */
+            background-color: #4CAF50;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -47,7 +46,7 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #8e62a1; /* Lighter pastel purple on hover */
+            background-color: #45a049;
         }
         .course-container {
             margin-bottom: 20px;
@@ -57,7 +56,7 @@
             justify-content: space-between;
             margin-bottom: 10px;
         }
-        .course-entry input {
+        .course-entry input, .course-entry select {
             width: 48%;
         }
         .course-entry button {
@@ -67,25 +66,6 @@
         }
         .course-entry button:hover {
             background-color: #e53935;
-        }
-        .success-message {
-            background-color: #dff0d8;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-            color: #3c763d;
-        }
-        .display-btn {
-            margin-top: 20px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .display-btn:hover {
-            background-color: #45a049;
         }
     </style>
     <script>
@@ -127,6 +107,10 @@
                     <input type="text" name="faculty_${i}" placeholder="Faculty Name" required />
                     <input type="text" name="teacher_id_${i}" placeholder="Teacher ID" required />
                     <input type="number" name="hours_per_week_${i}" placeholder="Hours per Week" required />
+                    <select name="course_type_${i}" required>
+                        <option value="theory">Theory</option>
+                        <option value="theory+practical">Theory + Practical</option>
+                    </select>
                     <button type="button" onclick="removeCourseFields(this)">Remove</button>
                 `;
                 courseContainer.appendChild(div);
@@ -145,7 +129,7 @@
         <p>Please fill in the details below to set up the timetable:</p>
 
         <!-- Only one form -->
-        <form action="{{ url_for('generate_timetable') }}" method="POST">
+        <form action="/generate_timetable" method="POST">
             <!-- Semester Type -->
             <div class="form-group">
                 <label for="sem-type">Select Semester Type:</label>
@@ -155,7 +139,7 @@
                     <option value="odd">Odd</option>
                 </select>
             </div>
-        
+
             <!-- Specific Semester -->
             <div class="form-group">
                 <label for="semester">Select Semester:</label>
@@ -163,31 +147,21 @@
                     <option value="" disabled selected>Choose Semester</option>
                 </select>
             </div>
-        
+
             <!-- Number of Courses -->
             <div class="form-group">
                 <label for="num-courses">Number of Courses:</label>
                 <input type="number" id="num-courses" name="num-courses" placeholder="Enter Number of Courses" min="1" required onchange="addCourseFields()">
             </div>
-        
+
             <!-- Dynamic Course and Faculty Fields -->
             <div id="course-container" class="course-container">
                 <!-- Course fields will be added here dynamically -->
             </div>
-        
+
             <!-- Submit Button -->
             <button type="submit">Submit Timetable Details</button>
-        </form> 
-
-        <!-- Success Message and Button (appears after successful submission) -->
-        {% if success %}
-        <div class="success-message">
-            <p>Timetable details submitted successfully!</p>
-            <a href="{{ url_for('dummy') }}">
-                <button class="display-btn">Go to Timetable Display</button>
-            </a>
-        </div>
-        {% endif %}
+        </form>
     </div>
 </body>
 </html>

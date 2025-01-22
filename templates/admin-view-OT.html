@@ -3,135 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin View Overtime</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
-        /* General Styling */
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to bottom, #eef2f3, #d9e3f0);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #f4e7f5; /* Pastel purple background */
+            color: #5c4b51; /* Complementary text color */
         }
 
-        /* Full Page Container */
+        h1 {
+            color: #4e2a68; /* Darker pastel purple for headings */
+            text-align: center;
+        }
+
+        .form-label {
+            color: #4e2a68; /* Matching label colors */
+        }
+
+        .form-control, .form-select {
+            border-color: #cdb4db;
+            background-color: #fff;
+            color: #4e2a68;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #b185d6;
+            box-shadow: 0 0 5px #b185d6;
+        }
+
+        table {
+            background-color: #ffffff;
+            border: 1px solid #cdb4db;
+            color: #5c4b51;
+        }
+
+        th {
+            background-color: #d4a5db;
+            color: #ffffff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f7ebf9;
+        }
+
+        tr:hover {
+            background-color: #e7d9ef;
+        }
+
         .container {
-            width: 90vw;
-            max-width: 1200px;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        /* Header Section */
-        .header {
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin: 0;
-            color: #333;
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            color: #555;
-        }
-
-        /* Admin Options Section */
-        .admin-options {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .admin-option {
-            background: white;
-            color: #333;
-            width: 300px;
-            height: 200px;
-            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #cdb4db;
             border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .admin-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        a {
+            color: #6c2ea0;
+            text-decoration: none;
         }
 
-        .admin-option img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
-        }
-
-        .admin-option h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        .admin-option p {
-            font-size: 1rem;
-            color: #666;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .admin-options {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .admin-option {
-                width: 90%;
-            }
+        a:hover {
+            text-decoration: underline;
+            color: #4e2a68;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>Admin Dashboard</h1>
-            <p>Select an option below</p>
-        </div>
-
-        <!-- Admin Options -->
-        <div class="admin-options">
-            <!-- Option 1: Check Teacher's OT -->
-            <div class="admin-option" onclick="location.href='/admin-view-OT.html'">
-                <img src="images/camera.png" alt="Teacher OT Icon">
-                <h3>Check Teacher's OT</h3>
-                <p>View overtime details of teachers.</p>
-            </div>
-
-            <!-- Option 2: Generate Timetable -->
-            <div class="admin-option" onclick="location.href='/timetable.html'">
-                <img src="images/camera.png" alt="Generate Timetable Icon">
-                <h3>Generate Timetable</h3>
-                <p>Create a timetable automatically.</p>
-            </div>
-
-            <!-- Option 3: OCR Personalized Timetable (Image Capture) -->
-            <div class="admin-option" onclick="location.href='/OCR.html'">
-                <img src="images/camera.png" alt="OCR Icon">
-                <h3>OCR Personalized Timetable</h3>
-                <p>Generate teacher-specific timetables using OCR.</p>
-            </div>
-        </div>
+<div class="container mt-5">
+    <h1>Admin Overtime View</h1>
+    <div class="mb-3">
+    <label for="search_query" class="form-label">Search by Faculty Name or ID</label>
+    <input type="text" id="search_query" class="form-control" placeholder="Enter faculty name or ID">
+</div>
+    <div class="mb-3">
+        <label for="date_range" class="form-label">Select Date Range</label>
+        <select id="date_range" class="form-select">
+            <option value="week" selected>This Week</option>
+            <option value="month">This Month</option>
+            <option value="custom">Custom Range</option>
+        </select>
     </div>
+    <div class="mb-3" id="custom_range" style="display: none;">
+        <label for="start_date" class="form-label">Start Date</label>
+        <input type="date" id="start_date" class="form-control">
+        <label for="end_date" class="form-label mt-3">End Date</label>
+        <input type="date" id="end_date" class="form-control">
+    </div>
+    <table class="table mt-3">
+        <thead>
+        <tr>
+            <th>Faculty Name</th>
+            <th>Total Hours</th>
+        </tr>
+        </thead>
+        <tbody id="faculty_table">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let searchTimeout; // Timer for debouncing
+
+$(document).ready(function () {
+    // Attach event listeners
+    $('#search_query').on('keyup', function () {
+        clearTimeout(searchTimeout); // Clear the previous timer
+        searchTimeout = setTimeout(() => {
+            fetchOvertime(); // Call the fetch function after a delay
+        }, 300); // 300ms debounce delay
+    });
+
+    $('#date_range, #start_date, #end_date').on('change', function () {
+        fetchOvertime(); // Fetch data when date filters are changed
+    });
+
+    // Show or hide custom date range fields
+    $('#date_range').on('change', function () {
+        const value = $(this).val();
+        if (value === 'custom') {
+            $('#custom_range').show();
+        } else {
+            $('#custom_range').hide();
+            $('#start_date').val('');
+            $('#end_date').val('');
+        }
+    });
+
+    // Fetch data initially when the page loads
+    fetchOvertime();
+});
+
+function fetchOvertime() {
+    const search_query = $('#search_query').val().trim();
+    const range = $('#date_range').val();
+    const start_date = $('#start_date').val();
+    const end_date = $('#end_date').val();
+
+    // Show a loading indicator (optional)
+    const tbody = $('#faculty_table');
+    tbody.html('<tr><td colspan="2">Loading...</td></tr>');
+
+    // Send a GET request to the backend
+    $.get('/get_overtime', { search_query, range, start_date, end_date }, function (data) {
+        tbody.empty(); // Clear the loading message
+
+        if (data.length === 0) {
+            tbody.append('<tr><td colspan="2">No records found</td></tr>');
+        } else {
+            data.forEach(item => {
+                tbody.append(`<tr>
+                    <td><a href="#" onclick="viewDetails('${item.faculty_id}', '${range}', '${start_date}', '${end_date}')">${item.faculty_name}</a></td>
+                    <td>${item.total_hours.toFixed(2)} hours</td>
+                </tr>`);
+            });
+        }
+    });
+}
+
+function viewDetails(email, range, start_date, end_date) {
+    $.get('/get_faculty_overtime_details', { email, start_date, end_date }, function (data) {
+        let details = data.map(record => `
+            <p><strong>Date:</strong> ${record.date}</p>
+            <p><strong>Start:</strong> ${record.start_time}</p>
+            <p><strong>End:</strong> ${record.end_time}</p>
+            <p><strong>Hours:</strong> ${record.hours_worked}</p>
+            <p><strong>Description:</strong> ${record.description}</p>
+            <hr>
+        `).join('');
+        alert(details);
+    });
+}
+
+</script>
 </body>
 </html>
