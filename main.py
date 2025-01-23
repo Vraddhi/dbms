@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 client = MongoClient("mongodb://localhost:27017/")
-db = client["DBMS_LAB"]
+db = client["management_dbms"]
 overtime_collection = db["teacher_overtime"]
 timetable_collection=db['timetable']
 users_collection = db["users"]
