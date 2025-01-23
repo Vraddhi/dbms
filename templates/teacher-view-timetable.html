@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Timetable</title>
+    <style>
+        /* Base reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body and container styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90vw; /* Adjusted to make the table wider */
+            height: 90vh; /* Adjusted to take up most of the vertical space */
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+            overflow: auto; /* Ensures scrollability for large tables */
+        }
+
+        /* Header Styling */
+        .header {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #6A5ACD;  /* SlateBlue (Purple) */
+        }
+
+        /* Logout button styling */
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #6A5ACD; /* SlateBlue (Purple) */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .logout-btn:hover {
+            background-color: #4B0082; /* Indigo (Purple) for hover effect */
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            height: 100%; /* Ensures the table takes up the available space */
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ccc; /* Border around each cell */
+        }
+
+        th {
+            background-color: #6A5ACD;  /* SlateBlue (Purple) */
+            color: white;
+            font-weight: bold;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f1f1f1; /* Light grey */
+        }
+
+        tr:hover td {
+            background-color: #ececec; /* Hover effect for rows */
+        }
+
+        /* Purple color for the first column (weekdays) */
+        tr td:first-child {
+            background-color: #6A5ACD; /* SlateBlue (Purple) */
+            color: white; /* White text */
+        }
+
+        .subject-cell {
+            vertical-align: middle;
+        }
+
+        /* Light yellow background for break blocks (whole row) */
+        .break-row {
+            background-color: #fff8b2; /* Light yellow */
+            color: #333333; /* Ensures text is readable */
+        }
+
+        /* Responsiveness for smaller screens */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                font-size: 20px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logout button -->
+        <a href="{{ url_for('logout') }}">
+            <button class="logout-btn">Logout</button>
+        </a>
+
+        <h3 class="header">Timetable for {{ email }}</h3>
+
+        <!-- Table for timetable -->
+        <table class="timetable">
+            <thead>
+                <tr>
+                    <th>Time Slot</th>
+                    <th>9:00-10:00</th>
+                    <th>10:00-11:00</th>
+                    <th>11:00-11:30</th>
+                    <th>11:30-12:30</th>
+                    <th>12:30-1:30</th>
+                    <th>1:30-2:30</th>
+                    <th>2:30-3:30</th>
+                    <th>3:30-4:30</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+                    <tr class="{{ 'break-row' if day == 'Monday' and ('11:00-11:30' in slots or '1:30-2:30' in slots) else '' }}">
+                        <td>{{ day }}</td>
+
+                        {% for time_slot in ["9:00-10:00", "10:00-11:00", "11:00-11:30", "11:30-12:30", "12:30-1:30", "1:30-2:30", "2:30-3:30", "3:30-4:30"] %}
+                            <td class="subject-cell">
+                                {% if time_slot == "11:00-11:30" or time_slot == "1:30-2:30" %}
+                                    <p>Break</p>  <!-- Filling break for these time slots -->
+                                {% else %}
+                                    {% set found = false %}
+                                    {% for slot in slots %}
+                                        {% if slot.slot == time_slot and slot.day == day %}
+                                            <p>{{ slot.course_name }}-Sem {{ slot.semester }}</p>
+                                            {% set found = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if not found %}
+                                        <p></p>  <!-- Empty cell when no course is found for the slot -->
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

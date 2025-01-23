@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #D8B0F7, #F1E1FF);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 50vw;
+            max-width: 500px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: #6A4C9C;
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 15px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .view-btn {
+            background: #9B79C1; /* Darker pastel purple */
+        }
+
+        .update-btn {
+            background: #9B79C1; /* Darker pastel purple */
+        }
+
+        .view-btn:hover {
+            background: #6A4C9C; /* Even darker purple on hover */
+        }
+
+        .update-btn:hover {
+            background: #6A4C9C; /* Even darker purple on hover */
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #6A4C9C;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .logout-btn:hover {
+            background-color: #53387C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logout Button -->
+        <a href="{{ url_for('logout') }}">
+            <button class="logout-btn">Logout</button>
+        </a>
+
+        <h1>Teacher Dashboard</h1>
+        <div class="buttons">
+            <a href="{{ url_for('teacher_view_timetable') }}" class="btn view-btn">View Timetable</a>
+            <a href="{{ url_for('update_overtime') }}" class="btn update-btn">Update Overtime</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -16,10 +16,9 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 client = MongoClient("mongodb://localhost:27017/")
-db = client["DBMS_LAB"]
+db = client["management_dbms"]
 overtime_collection = db["teacher_overtime"]
 timetable_collection=db['timetable']
-
 #this is ocr thing
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
@@ -213,68 +212,7 @@ def admin_login():
             return redirect(url_for('admin_login'))
     return render_template('admin-login.html')
 
-@app.route('/teacher-login', methods=['GET', 'POST'])
-def teacher_login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
 
-        # Find the user in the database
-        user = db.users.find_one({"email": email})
-
-        # Verify the password correctly
-        if user and check_password_hash(user['password'], password):  # Compare hashed password correctly
-            session["email"] = email  # Store email in session
-            flash('Login successful', 'success')
-            return redirect(url_for('dashboard'))  # Redirect to dashboard
-        else:
-            flash('Invalid email or password', 'error')
-            return redirect(url_for('teacher_login'))  # Redirect to login page
-
-    return render_template('teacher-login.html')
-
-@app.route('/teacher-signup', methods=['GET', 'POST'])
-def teacher_signup():
-    if request.method == 'POST':
-        # Get form data
-        email = request.form['email'].strip().lower()
-        password = request.form['password']
-        faculty_id = request.form['faculty_id'].strip()
-        name = request.form['name'].strip()
-        department = request.form['department'].strip()
-        roles = request.form['roles'].strip()
-
-        try:
-            # Check for duplicate user
-            existing_user = db.users.find_one({"email": email})
-            if existing_user:
-                flash('A user with this email already exists. Please log in.', 'error')
-                return redirect(url_for('teacher_login'))
-
-            # Hash the password
-            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-
-            # Prepare data to insert into MongoDB
-            user_data = {
-                'email': email,
-                'password': hashed_password,
-                'faculty_id': faculty_id,
-                'name': name,
-                'department': department,
-                'roles': roles
-            }
-
-            try:
-                db.users.insert_one(user_data)
-                return redirect(url_for('teacher_login'))
-            except:
-                print(".")
-
-        except Exception as e:
-            print(f"Error during signup: {str(e)}")
-            flash(f"An error occurred while creating your account: {str(e)}", 'error')
-            return redirect(url_for('teacher_signup'))
-    return render_template('teacher-signup.html')
 
 @app.route('/dashboard')
 def dashboard():
@@ -696,7 +634,164 @@ def generate_timetable():
             return redirect(url_for('generate_timetable'))
 
 
+users_collection = db["users"]
 
+
+@app.route('/teacher-login', methods=['GET', 'POST'])
+def teacher_login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        # Find the user in the database
+        user = db.users.find_one({"email": email})
+
+        # Verify the password correctly
+        if user and check_password_hash(user['password'], password):
+            session["email"] = email  # Store email in session
+            flash('Login successful', 'success')
+            return redirect(url_for('teacher_entry'))  # Redirect to teacher-entry.html
+        else:
+            flash('Invalid email or password', 'error')
+            return redirect(url_for('teacher_login'))
+
+    return render_template('teacher-login.html')
+
+
+@app.route('/teacher-signup', methods=['GET', 'POST'])
+def teacher_signup():
+    if request.method == 'POST':
+        email = request.form['email'].strip().lower()
+        password = request.form['password']
+        faculty_id = request.form['faculty_id'].strip()
+        name = request.form['name'].strip()
+        department = request.form['department'].strip()
+        roles = request.form['roles'].strip()
+
+        try:
+            existing_user = db.users.find_one({"email": email})
+            if existing_user:
+                flash('A user with this email already exists. Please log in.', 'error')
+                return redirect(url_for('teacher_login'))
+
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+            user_data = {
+                'email': email,
+                'password': hashed_password,
+                'faculty_id': faculty_id,
+                'name': name,
+                'department': department,
+                'roles': roles
+            }
+
+            db.users.insert_one(user_data)
+            flash('Signup successful! Please login.', 'success')
+            return redirect(url_for('teacher_login'))
+
+        except Exception as e:
+            print(f"Error during signup: {str(e)}")
+            flash(f"An error occurred while creating your account: {str(e)}", 'error')
+            return redirect(url_for('teacher_signup'))
+
+    return render_template('teacher-signup.html')
+
+
+@app.route('/teacher-entry')
+def teacher_entry():
+    if "email" not in session:
+        flash("Please log in first", "error")
+        return redirect(url_for("teacher_login"))
+    return render_template('teacher-entry.html')
+
+
+@app.route('/teacher-view-timetable')
+def teacher_view_timetable():
+    if "email" not in session:
+        flash("Please log in first", "error")
+        return redirect(url_for("teacher_login"))
+
+    email = session["email"]
+
+    # Fetching user details (faculty_id) from users collection
+    user = users_collection.find_one({"email": email})
+    if not user:
+        flash("User not found!", "error")
+        return redirect(url_for("teacher_login"))
+
+    faculty_id = user.get("faculty_id")
+
+    # Fetching timetable entries for the specific faculty_id
+    timetable_entries = timetable_collection.find({"courses.teacher_id": faculty_id})
+
+    if not timetable_entries:
+        flash("No timetable found for this teacher.", "info")
+        return redirect(url_for("teacher_dashboard"))
+
+    # List to store timetable information
+    slots = []
+
+    # Looping through each timetable entry
+    for entry in timetable_entries:
+        semester = entry.get("semester")
+
+        # Looping through each course and checking for the teacher_id
+        for course in entry.get("courses", []):
+            if course.get("teacher_id") == faculty_id:
+                course_name = course.get("course_name")
+                slots_list = course.get("slots", [])
+
+                # Ensure each slot has the correct day and time, and add it to the slots list
+                for slot in slots_list:
+                    day_time = slot.split(" ", 1)  # Split the day and time (e.g., "Monday 9:00-10:00")
+
+                    if len(day_time) == 2:
+                        day, time = day_time
+
+                        # Split the time range if it is a 2-hour slot
+                        time_range = time.split("-")
+                        if len(time_range) == 2:
+                            start_time, end_time = time_range
+
+                            # Check if the slot duration is more than 1 hour (i.e., 2-hour slot)
+                            start_hour, start_minute = map(int, start_time.split(":"))
+                            end_hour, end_minute = map(int, end_time.split(":"))
+
+                            if end_hour - start_hour >= 1:  # If the slot is more than 1 hour, split it
+                                # Split into two one-hour slots
+                                first_slot = f"{start_hour}:{start_minute:02d}-{start_hour + 1}:{start_minute:02d}"
+                                second_slot = f"{start_hour + 1}:{start_minute:02d}-{end_hour}:{end_minute:02d}"
+
+                                # Add the two new slots
+                                slots.append({
+                                    "course_name": course_name,
+                                    "slot": first_slot,
+                                    "semester": semester,
+                                    "day": day
+                                })
+                                slots.append({
+                                    "course_name": course_name,
+                                    "slot": second_slot,
+                                    "semester": semester,
+                                    "day": day
+                                })
+                            else:
+                                # If the slot is exactly 1 hour, just add it normally
+                                slots.append({
+                                    "course_name": course_name,
+                                    "slot": time,
+                                    "semester": semester,
+                                    "day": day
+                                })
+
+    # Pass the slots to the template
+    return render_template('teacher-view-timetable.html', slots=slots)
+@app.route('/update-overtime')
+def update_overtime():
+    if "email" not in session:
+        flash("Please log in first", "error")
+        return redirect(url_for("teacher_login"))
+    return render_template('teacher-dashboard.html')
 
 @app.route('/logout')
 def logout():
