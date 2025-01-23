@@ -16,9 +16,11 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 client = MongoClient("mongodb://localhost:27017/")
-db = client["management_dbms"]
+db = client["DBMS_LAB"]
 overtime_collection = db["teacher_overtime"]
 timetable_collection=db['timetable']
+users_collection = db["users"]
+
 #this is ocr thing
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
@@ -634,7 +636,7 @@ def generate_timetable():
             return redirect(url_for('generate_timetable'))
 
 
-users_collection = db["users"]
+
 
 
 @app.route('/teacher-login', methods=['GET', 'POST'])
