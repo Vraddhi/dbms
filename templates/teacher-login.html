@@ -4,34 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* General Styling */
-        body {
-            background: linear-gradient(to right, #D8BFD8, #E6E6FA);
-            font-family: 'Poppins', sans-serif;
-            color: #4B0082;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        :root {
+            --primary-color: #6A4C9C;
+            --primary-dark: #553C9A;
+            --secondary-color: #9F7AEA;
+            --accent-color: #B794F4;
+            --text-light: #E9D8FD;
+            --white: #ffffff;
+            --shadow: rgba(106, 76, 156, 0.2);
+        }
+
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
         .form_container {
-            background: #FAF0FF;
-            padding: 50px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            color: #4B0082;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 3.5rem;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             width: 100%;
             max-width: 400px;
             text-align: center;
+            z-index: 1;
         }
 
         .form_container h2 {
             font-size: 24px;
             margin-bottom: 20px;
-            color: #6A5ACD;
+            color: var(--text-light);
         }
 
         .input_box {
@@ -42,22 +62,22 @@
         .input_box input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #DDA0DD;
+            border: 1px solid var(--accent-color);
             border-radius: 5px;
             font-size: 14px;
         }
 
         .input_box input:focus {
-            border: 2px solid #9370DB;
+            border: 2px solid var(--primary-color);
             outline: none;
         }
 
         .button {
             width: 100%;
             padding: 10px;
-            background: #9370DB;
+            background: var(--primary-color);
             border: none;
-            color: #fff;
+            color: var(--white);
             font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
@@ -65,7 +85,7 @@
         }
 
         .button:hover {
-            background: #6A5ACD;
+            background: var(--accent-color);
         }
     </style>
 </head>
@@ -75,11 +95,11 @@
         <h2>Teacher Login</h2>
         <form id="teacherLoginForm" action="/teacher-login" method="POST">
             <div class="input_box">
-                <label for="email">Email:</label>
+                <label for="email" style="color: var(--white);">Email:</label>
                 <input type="email" name="email" placeholder="Enter your email" required />
             </div>
             <div class="input_box">
-                <label for="password">Password:</label>
+                <label for="password" style="color: var(--white);">Password:</label>
                 <input type="password" name="password" placeholder="Enter your password" required />
             </div>
             <button class="button" type="submit">Login</button>

@@ -149,22 +149,6 @@ def parse_timetable(ocr_text):
 def ocr_page():
     return render_template('OCR.html')  # This looks for OCR.html in the 'templates' folder
 
-@app.route('/personalized_timetable')
-def personalized_timetable():
-    # Get the course code from the query parameters
-    course_code = request.args.get('course_code')
-    
-    if not course_code:
-        return "Course code is missing", 400
-
-    # Query the MongoDB collection for the timetable matching the course code
-    timetable = list(timetable_collection.find({'course_code': course_code}))
-    
-    if not timetable:
-        return "No timetable found for the provided course code.", 404
-    
-    # Pass the timetable data and course code to the template
-    return render_template('personalized_timetable.html', timetable=timetable, course_code=course_code)
 
 @app.route("/ocr_timetable", methods=['GET', 'POST'])
 def ocr_timetable():
@@ -213,9 +197,6 @@ def ocr_timetable():
     return render_template('OCR.html')
 # till here
 
-@app.route('/dummy')
-def dummy():
-    return render_template('dummy.html')
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -300,9 +281,6 @@ def dashboard():
     return render_template('teacher-dashboard.html')
 
 
-
-
-
 @app.route('/log_overtime', methods=['POST'])
 def log_overtime():
     if 'email' not in session:
@@ -338,6 +316,15 @@ def log_overtime():
     overtime_collection.insert_one(overtime_entry)  # Save to MongoDB
 
     return jsonify({"message": "Overtime logged successfully"})
+@app.route('/get_overtime_events', methods=['GET'])
+def get_overtime_events():
+    if 'email' not in session:
+        return jsonify({"error": "Unauthorized"}), 401  # User must be logged in
+    email = session['email']
+    date = request.args.get('date')
+    # Query MongoDB for records matching faculty's email & selected date
+    records = list(overtime_collection.find({"email": email, "date": date}, {"_id": 0}))
+    return jsonify(records)
 
 @app.route('/admin-view-OT', methods=['GET'])
 def admin_view_ot():
@@ -445,13 +432,18 @@ def fetch_timetables():
     for tt in timetables:
         tt['_id'] = str(tt['_id'])  # Convert ObjectId to string
     return jsonify({"timetables": timetables})
-@app.route('/view_timetable/<string:timetable_id>', methods=['GET'])
-def view_timetable(timetable_id):
-    timetable = timetable_collection.find_one({"_id": ObjectId(timetable_id)})
-    if not timetable:
-        return "Timetable not found", 404
-    # Render the timetable (placeholder, replace with your HTML rendering logic)
-    return f"<h1>Timetable for Semester {timetable['semester']}</h1><p>{timetable}</p>"
+
+
+@app.route('/view_timetable/<id>')
+def view_timetable(id):
+    # Find the timetable by its ID
+    timetable = timetable_collection.find_one({'_id': ObjectId(id)})
+
+    if timetable:
+        timetable['_id'] = str(timetable['_id'])  # Convert ObjectId to string
+        return render_template('view_timetable.html', timetable=timetable)
+    else:
+        return 'Timetable not found', 404
 
 @app.route('/delete_timetable/<string:timetable_id>', methods=['DELETE'])
 def delete_timetable(timetable_id):
@@ -640,6 +632,8 @@ def assign_time_slots(course_type, theory_hours_per_week, semester, teacher_id, 
 
 @app.route("/generate_timetable", methods=['GET', 'POST'])
 def generate_timetable():
+    if request.method == 'GET':
+        return render_template("timetable.html")
     if request.method == 'POST':
         try:
             semester_type = request.form['sem-type']
@@ -694,14 +688,14 @@ def generate_timetable():
                 "semester": semester,
                 "courses": courses
             })
-
-            return redirect(url_for('dummy'))
+            print("Done")
+            return redirect(url_for('admin-dashboard'))
 
         except Exception as e:
             flash(f"Error generating timetable: {str(e)}")
             return redirect(url_for('generate_timetable'))
 
-    return render_template("timetable.html")
+
 
 
 @app.route('/logout')

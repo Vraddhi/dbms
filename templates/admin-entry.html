@@ -4,153 +4,279 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* General Styling */
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #6A4C9C;
+            --secondary-color: #D8B0F7;
+            --accent-color: #F1E1FF;
+            --text-light: #F9F5FF;
+            --white: #ffffff;
+            --shadow: rgba(106, 76, 156, 0.2);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(to bottom, #D8B0F7, #F1E1FF);
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 20px;
+            color: var(--white);
         }
 
         .container {
-            width: 90vw;
+            width: 95%;
             max-width: 1200px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(31, 38, 135, 0.37);
         }
 
-        h1 {
-            color: #6A4C9C;
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--text-light), var(--white));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-buttons button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .header-buttons .generate-btn {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .header-buttons .generate-btn:hover {
+            background: #553982;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .header-buttons .logout-btn {
+            background: #E57373;
+            color: var(--white);
+        }
+
+        .header-buttons .logout-btn:hover {
+            background: #D32F2F;
+        }
+
+        /* Timetables Section */
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+
+
+        .timetables-section h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-light);
             margin-bottom: 20px;
         }
 
-        .admin-options, .timetables-section {
-            margin-bottom: 40px;
+            .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            opacity: 0.1;
+            pointer-events: none;
         }
 
-        .admin-options {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
+        .grid-cell {
+            border: 1px solid var(--white);
+            animation: gridPulse 3s infinite alternate;
         }
 
-        .admin-option {
-            background: #F6F6F6;
-            color: #6A4C9C;
-            width: 300px;
+        @keyframes gridPulse {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.3; }
+        }
+
+        /* Floating shapes */
+        .floating-shape {
+            position: absolute;
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .calendar-shape {
+            top: 10%;
+            right: 10%;
+            width: 200px;
             height: 200px;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: float 6s ease-in-out infinite;
         }
 
-        .admin-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 15px 5px rgba(142, 68, 173, 0.5);
+        .clock-shape {
+            bottom: 10%;
+            left: 5%;
+            width: 150px;
+            height: 150px;
+            animation: float 8s ease-in-out infinite;
         }
 
-        .admin-option h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+.calendar-shape {
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='40' y='40' width='120' height='120' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M50 60 H150 M50 90 H150 M50 120 H150 M80 60 V140 M110 60 V140' stroke='%236A4C9C' stroke-width='2'/%3E%3C/svg%3E");
         }
 
-        .admin-option p {
-            font-size: 1rem;
-            color: #A36FBF;
+        .clock-shape {
+            background-image: url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='75' cy='75' r='60' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M75 25 V75 H105' stroke='%236A4C9C' stroke-width='3'/%3E%3C/svg%3E");
         }
-
         .timetable {
-            margin: 20px 0;
-            padding: 10px;
-            background: #F6F6F6;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            background: var(--white);
+            color: var(--primary-color);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(31, 38, 135, 0.12);
         }
 
-        .timetable h3 {
-            color: #6A4C9C;
+        .timetable:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 20px rgba(106, 76, 156, 0.2);
         }
 
         .buttons {
-            margin-top: 10px;
+            display: flex;
+            gap: 10px;
         }
 
         .buttons button {
-            padding: 10px 15px;
-            margin: 0 5px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .view-btn {
-            background: #6A4C9C;
-            color: white;
+        .buttons .view-btn {
+            background: var(--primary-color);
+            color: var(--white);
         }
 
-        .delete-btn {
-            background: #E57373;
-            color: white;
+        .buttons .view-btn:hover {
+            background: #553982;
         }
 
-        .view-btn:hover {
-            background: #53387C;
+        .buttons .delete-btn {
+            background: #FFE5E5;
+            color: #D32F2F;
         }
 
-        .delete-btn:hover {
-            background: #D64545;
+        .buttons .delete-btn:hover {
+            background: #D32F2F;
+            color: var(--white);
         }
 
-        @media (max-width: 768px) {
-            .admin-options {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .admin-option {
-                width: 90%;
-            }
+        .buttons .download-btn {
+            background: var(--secondary-color);
+            color: var(--primary-color);
         }
+
+                .generate-btn1 {
+    padding: 12px 30px;
+    background: #6A4C9C;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px; /* Adding some spacing for better layout */
+}
+
+.generate-btn1:hover {
+    background: #553982;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(106, 76, 156, 0.3);
+}
+
+.generate-btn1:active {
+    transform: translateY(0);
+}
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <h1>Admin Dashboard</h1>
+<div class="background-grid">
+        <!-- Grid cells will be added via JavaScript -->
+    </div>
 
-        <!-- Admin Options -->
-        <div class="admin-options">
-            <div class="admin-option" onclick="location.href='{{url_for('admin_view_ot')}}'">
-                <h3>Check Teacher's OT</h3>
-                <p>View overtime details of teachers.</p>
-            </div>
-            <div class="admin-option" onclick="location.href='{{ url_for('generate_timetable') }}'">
-                <h3>Generate Timetable</h3>
-                <p>Create a timetable automatically.</p>
-            </div>
-            <div class="admin-option" onclick="location.href='{{ url_for('ocr_timetable') }}'">
-                <h3>OCR Personalized Timetable</h3>
-                <p>Generate teacher-specific timetables using OCR.</p>
+    <!-- Floating shapes -->
+    <div class="floating-shape calendar-shape"></div>
+    <div class="floating-shape clock-shape"></div>
+    <div class="container">
+
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <div class="header-buttons">
+                <button class="generate-btn" onclick="location.href='{{ url_for('generate_timetable') }}'">Generate Timetable</button>
+                <button class="generate-btn" onclick="location.href='{{ url_for('ocr_timetable') }}'">Upload Timetable</button>
+                                <button class="generate-btn" onclick="location.href='{{ url_for('admin_view_ot') }}'">Check Teacher's OT</button>
+                <button class="logout-btn" onclick="location.href='{{ url_for('logout') }}'">Logout</button>
             </div>
         </div>
 
-        <!-- Timetables Section -->
-        <div class="timetables-section">
-            <h2>Available Timetables</h2>
-            <div id="timetables">
-                <!-- Timetable data will be populated here dynamically -->
+        <!-- Content Section -->
+        <div class="content">
+            <div class="timetables-section">
+                <h2>Available Timetables</h2>
+                <div id="timetables">
+                    <!-- Timetable data will be populated here dynamically -->
+                </div>
             </div>
         </div>
     </div>
@@ -162,17 +288,22 @@
             const timetablesDiv = document.getElementById('timetables');
 
             if (data.timetables.length === 0) {
-                timetablesDiv.innerHTML = '<p>No timetables available.</p>';
-                return;
-            }
+    timetablesDiv.innerHTML = `
+        <p class="no-timetables">No timetables available.</p>
+        <button class="generate-btn1" onclick="location.href='{{ url_for('generate_timetable') }}'">Generate Timetable</button>
+    `;
+    return;
+}
 
+
+            timetablesDiv.innerHTML = '';
             data.timetables.forEach(tt => {
                 const ttDiv = document.createElement('div');
                 ttDiv.classList.add('timetable');
                 ttDiv.innerHTML = `
                     <h3>Semester ${tt.semester} Timetable</h3>
                     <div class="buttons">
-                        <button class="view-btn" onclick="viewTimetable('${tt._id}')">View</button>
+                        <button class="view-btn" onclick="viewTimetable('${tt._id}')">View Timetable</button>
                         <button class="delete-btn" onclick="deleteTimetable('${tt._id}')">Delete</button>
                     </div>
                 `;
@@ -185,12 +316,14 @@
         }
 
         async function deleteTimetable(id) {
-            const response = await fetch(`/delete_timetable/${id}`, { method: 'DELETE' });
-            if (response.ok) {
-                alert('Timetable deleted successfully.');
-                location.reload();
-            } else {
-                alert('Failed to delete timetable.');
+            if (confirm('Are you sure you want to delete this timetable?')) {
+                const response = await fetch(`/delete_timetable/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Timetable deleted successfully.');
+                    location.reload();
+                } else {
+                    alert('Failed to delete timetable.');
+                }
             }
         }
 
@@ -198,3 +331,4 @@
     </script>
 </body>
 </html>
+

@@ -8,35 +8,36 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         :root {
-            --primary-color: #8B5CF6;
-            --primary-light: #A78BFA;
-            --primary-dark: #7C3AED;
-            --primary-bg: #EDE9FE;
-            --danger-color: #f44336;
-            --danger-dark: #d32f2f;
-            --background-color: #F9FAFB;
-            --shadow: 0 4px 6px rgba(139, 92, 246, 0.1);
-            --border-radius: 8px;
-        }
+    --primary-color: #8B5CF6;
+    --primary-light: #A78BFA;
+    --primary-dark: #7C3AED;
+    --primary-bg: #EDE9FE;
+    --danger-color: #f44336;
+    --danger-dark: #d32f2f;
+    --background-color: #F9FAFB;
+    --shadow: 0 4px 6px rgba(139, 92, 246, 0.1);
+    --border-radius: 8px;
+    --font-family: 'Roboto', sans-serif; /* Set the theme font here */
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            line-height: 1.6;
-        }
+    font-family: var(--font-family); /* Use the theme font */
+    background-color: var(--background-color);
+    line-height: 1.6;
+}
 
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-        }
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
 
         .header-content {
             display: flex;

@@ -3,99 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Login</title>
+    <title>Teacher Signup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Global Styles */
+        :root {
+            --primary-color: #6A4C9C;
+            --primary-dark: #553C9A;
+            --secondary-color: #9F7AEA;
+            --accent-color: #B794F4;
+            --text-light: #E9D8FD;
+            --white: #ffffff;
+            --shadow: rgba(106, 76, 156, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background-color: #F1E6F5;  /* Light pastel purple background */
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+            color: var(--white);
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
         .login-container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             width: 100%;
-            max-width: 400px;
+            max-width: 800px;
             text-align: center;
+            z-index: 1;
         }
 
         h1 {
-        color: #6A4C9C;  /* Pastel purple text color */
-        margin-top: 80px;  /* Increased gap above the text */
-        margin-bottom: 30px; /* Added a bit more space below the text */
-        font-size: 32px;     /* Increased font size for better visibility */
-        line-height: 1.4;    /* Improved line spacing */
-        word-break: break-word; /* Ensure long words wrap to the next line if needed */
-    }
+            color: var(--text-light);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 28px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
 
         .form-group {
-            margin-bottom: 20px;
-            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
             font-size: 14px;
             margin-bottom: 5px;
-            color: #6A4C9C;  /* Pastel purple */
+            color: var(--text-light);
+            width: 100%; /* Full width for labels */
+        }
+
+        .form-group .input-container {
+            flex-basis: 48%;
+            margin-bottom: 10px;
         }
 
         .form-group input {
             width: 100%;
             padding: 10px;
             font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
             margin-top: 5px;
         }
 
+        /* Adjust inputs on mobile for full-width */
+        @media (max-width: 600px) {
+            .form-group input {
+                width: 100%;
+            }
+        }
+
         .form-group input:focus {
-            border-color: #6A4C9C; /* Highlight on focus */
+            border-color: var(--primary-color);
             outline: none;
         }
 
-        .error-message, .server-error-message {
+        .error-message {
             color: red;
             font-size: 14px;
-            margin-bottom: 20px;
-            display: none; /* Hidden by default */
+            margin-bottom: 15px;
+            display: none;
         }
 
         .btn {
-            background-color: #6A4C9C;  /* Pastel purple */
-            color: white;
+            background-color: var(--primary-color);
+            color: var(--white);
             padding: 12px;
             font-size: 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             width: 100%;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-top: 20px;
         }
 
         .btn:hover {
-            background-color: #5b3d8c; /* Slightly darker pastel purple on hover */
+            background-color: var(--accent-color);
         }
 
         .signup-link p {
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 14px;
         }
 
         .signup-link a {
-            color: #6A4C9C;  /* Pastel purple */
+            color: var(--primary-color);
             text-decoration: none;
         }
 
@@ -168,32 +201,43 @@
             <div id="error-message" class="error-message"></div>
 
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
+                <div class="input-container">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
             </div>
+
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <div class="input-container">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                <div class="input-container">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+                </div>
             </div>
+
             <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <div class="input-container">
+                    <label for="faculty_id">Faculty ID</label>
+                    <input type="text" id="faculty_id" name="faculty_id" required placeholder="Enter your Faculty ID">
+                </div>
+                <div class="input-container">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
             </div>
+
             <div class="form-group">
-                <label for="faculty_id">Faculty ID</label>
-                <input type="text" id="faculty_id" name="faculty_id" required>
-            </div>
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="department">Department</label>
-                <input type="text" id="department" name="department" required>
-            </div>
-            <div class="form-group">
-                <label for="roles">Roles</label>
-                <input type="text" id="roles" name="roles" required>
+                <div class="input-container">
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department" required placeholder="Enter your department">
+                </div>
+                <div class="input-container">
+                    <label for="roles">Roles</label>
+                    <input type="text" id="roles" name="roles" required placeholder="Enter your roles">
+                </div>
             </div>
 
             <button type="submit" class="btn">Signup</button>

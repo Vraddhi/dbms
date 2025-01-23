@@ -4,68 +4,241 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timetable Configuration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background-color: #f4f4f9;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #D8B0F7, #F1E1FF);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .grid-cell {
+            border: 1px solid var(--white);
+            animation: gridPulse 3s infinite alternate;
+        }
+
+        @keyframes gridPulse {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.3; }
+        }
+
+        /* Floating shapes */
+        .floating-shape {
+            position: absolute;
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .calendar-shape {
+            top: 10%;
+            right: 10%;
+            width: 200px;
+            height: 200px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .clock-shape {
+            bottom: 10%;
+            left: 5%;
+            width: 150px;
+            height: 150px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+.calendar-shape {
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='40' y='40' width='120' height='120' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M50 60 H150 M50 90 H150 M50 120 H150 M80 60 V140 M110 60 V140' stroke='%236A4C9C' stroke-width='2'/%3E%3C/svg%3E");
+        }
+
+        .clock-shape {
+            background-image: url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='75' cy='75' r='60' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M75 25 V75 H105' stroke='%236A4C9C' stroke-width='3'/%3E%3C/svg%3E");
         }
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 1200px;
+            width: 100%;
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(106, 76, 156, 0.2);
         }
-        h2, h3 {
-            color: #333;
+
+        h2 {
+            color: #6A4C9C;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
         }
+
+        p {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #5C4B51;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
         }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #6A4C9C;
+            display: block;
+        }
+
         input, select {
             width: 100%;
-            padding: 10px;
-            margin: 5px 0 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px;
+            border: 1px solid #CDB4DB;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #FFF;
+            color: #6A4C9C;
+            box-sizing: border-box;
         }
+
+        input:focus, select:focus {
+            border-color: #B185D6;
+            box-shadow: 0 0 5px #B185D6;
+            outline: none;
+        }
+
         button {
-            background-color: #4CAF50;
+            background-color: #6A4C9C;
             color: white;
             padding: 10px 15px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: #553982;
+            transform: translateY(-2px);
         }
-        .course-container {
-            margin-bottom: 20px;
+
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            overflow-x: auto;
+            display: none; /* Initially hidden */
         }
+
+        .course-table th, .course-table td {
+            border: 1px solid #CDB4DB;
+            text-align: center;
+            padding: 10px;
+            font-size: 1rem;
+            word-break: break-word;
+        }
+
+        .course-table th {
+            background-color: #6A4C9C;
+            color: white;
+            font-weight: 600;
+        }
+
+        .course-table td button {
+            background-color: #FFB74D;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .course-table td button:hover {
+            background-color: #FF9800;
+        }
+
+        .dynamic-header {
+            text-align: left;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #6A4C9C;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: #E57373;
+            color: var(--white);
+        }
+
+        .logout-btn:hover {
+            background: #D32F2F;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .course-table th, .course-table td {
+                font-size: 0.9rem;
+            }
+        }
+
         .course-entry {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
         }
+
         .course-entry input, .course-entry select {
-            width: 48%;
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #CDB4DB;
         }
+
         .course-entry button {
-            width: 48%;
-            background-color: #f44336;
+            background-color: #E57373;
+            color: white;
             border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
         }
+
         .course-entry button:hover {
-            background-color: #e53935;
+            background-color: #D32F2F;
         }
     </style>
     <script>
@@ -96,24 +269,54 @@
             const courseContainer = document.getElementById('course-container');
             const numCourses = document.getElementById('num-courses').value;
 
-            // Remove all previous course entries
-            courseContainer.innerHTML = '';
+            // Create table structure
+            let tableHTML = `
+                <table class="courses-table">
+                    <thead>
+                        <tr>
+                            <th>Course Name</th>
+                            <th>Faculty Name</th>
+                            <th>Teacher ID</th>
+                            <th>Hours/Week</th>
+                            <th>Course Type</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
 
             for (let i = 0; i < numCourses; i++) {
-                const div = document.createElement('div');
-                div.classList.add('course-entry');
-                div.innerHTML = `
-                    <input type="text" name="course_${i}" placeholder="Course Name" required />
-                    <input type="text" name="faculty_${i}" placeholder="Faculty Name" required />
-                    <input type="text" name="teacher_id_${i}" placeholder="Teacher ID" required />
-                    <input type="number" name="hours_per_week_${i}" placeholder="Hours per Week" required />
-                    <select name="course_type_${i}" required>
-                        <option value="theory">Theory</option>
-                        <option value="theory+practical">Theory + Practical</option>
-                    </select>
-                    <button type="button" onclick="removeCourseFields(this)">Remove</button>
+                tableHTML += `
+                    <tr id="course-row-${i}">
+                        <td><input type="text" name="course_${i}" placeholder="Course Name" required></td>
+                        <td><input type="text" name="faculty_${i}" placeholder="Faculty Name" required></td>
+                        <td><input type="text" name="teacher_id_${i}" placeholder="Teacher ID" required></td>
+                        <td><input type="number" name="hours_per_week_${i}" placeholder="Hours" required></td>
+                        <td>
+                            <select name="course_type_${i}" required>
+                                <option value="theory">Theory</option>
+                                <option value="theory+practical">Theory + Practical</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="remove-btn" onclick="removeCourseRow('course-row-${i}')">Remove</button>
+                        </td>
+                    </tr>
                 `;
-                courseContainer.appendChild(div);
+            }
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            courseContainer.innerHTML = tableHTML;
+        }
+
+        function removeCourseRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
             }
         }
 
@@ -121,46 +324,85 @@
             const courseContainer = document.getElementById('course-container');
             courseContainer.removeChild(button.parentNode);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validate form before submission
+            function validateForm() {
+                const form = document.querySelector('form');
+                const inputs = form.querySelectorAll('input[required]');
+                let valid = true;
+
+                inputs.forEach(input => {
+                    if (!input.value) {
+                        valid = false;
+                        input.style.borderColor = 'red'; // Indicate invalid input
+                    } else {
+                        input.style.borderColor = ''; // Reset border color
+                    }
+                });
+
+                return valid;
+            }
+
+            // Prevent form submission if validation fails
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    if (!validateForm()) {
+                        event.preventDefault(); // Prevent form submission
+                    }
+                });
+            }
+        });
     </script>
 </head>
-<body>
+<body><div class="background-grid">
+        <!-- Grid cells will be added via JavaScript -->
+    </div>
+
+    <!-- Floating shapes -->
+    <div class="floating-shape calendar-shape"></div>
+    <div class="floating-shape clock-shape"></div>
+
     <div class="container">
+         <div class="header-buttons" style="display: flex; justify-content: space-between;">
+            <button onclick="location.href='/admin-dashboard'">Back</button>
+            <button class="logout-btn" onclick="location.href='/logout'">Logout</button>
+        </div>
         <h2>Timetable Configuration</h2>
         <p>Please fill in the details below to set up the timetable:</p>
 
-        <!-- Only one form -->
         <form action="/generate_timetable" method="POST">
-            <!-- Semester Type -->
-            <div class="form-group">
-                <label for="sem-type">Select Semester Type:</label>
-                <select id="sem-type" name="sem-type" onchange="updateSemesters()" required>
-                    <option value="" disabled selected>Choose Semester Type</option>
-                    <option value="even">Even</option>
-                    <option value="odd">Odd</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sem-type">Semester Type:</label>
+                    <select id="sem-type" name="sem-type" onchange="updateSemesters()" required>
+                        <option value="" disabled selected>Select</option>
+                        <option value="even">Even</option>
+                        <option value="odd">Odd</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="semester">Semester:</label>
+                    <select id="semester" name="semester" required>
+                        <option value="" disabled selected>Select Semester</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="num-courses">Number of Courses:</label>
+                    <input type="number" id="num-courses" name="num-courses" placeholder="Enter Number" min="1" required onchange="addCourseFields()">
+                </div>
             </div>
 
-            <!-- Specific Semester -->
-            <div class="form-group">
-                <label for="semester">Select Semester:</label>
-                <select id="semester" name="semester" required>
-                    <option value="" disabled selected>Choose Semester</option>
-                </select>
-            </div>
+            <div class="dynamic-header" id="course-header">Courses:</div>
 
-            <!-- Number of Courses -->
-            <div class="form-group">
-                <label for="num-courses">Number of Courses:</label>
-                <input type="number" id="num-courses" name="num-courses" placeholder="Enter Number of Courses" min="1" required onchange="addCourseFields()">
-            </div>
+            <div id="course-container"></div>
 
-            <!-- Dynamic Course and Faculty Fields -->
-            <div id="course-container" class="course-container">
-                <!-- Course fields will be added here dynamically -->
+            <div class="form-group" style="text-align: center;">
+                <button type="submit">Submit Timetable Details</button>
             </div>
-
-            <!-- Submit Button -->
-            <button type="submit">Submit Timetable Details</button>
         </form>
     </div>
 </body>

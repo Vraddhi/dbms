@@ -4,25 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduFlow - Entry Page</title>
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6B46C1;
+            --primary-color: #6A4C9C;
             --primary-dark: #553C9A;
             --secondary-color: #9F7AEA;
             --accent-color: #B794F4;
             --text-light: #E9D8FD;
             --white: #ffffff;
+            --shadow: rgba(106, 76, 156, 0.2);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
             color: var(--white);
@@ -30,115 +31,191 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            overflow: hidden;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
+        /* Animated background grid */
+        .background-grid {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
             opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .grid-cell {
+            border: 1px solid var(--white);
+            animation: gridPulse 3s infinite alternate;
+        }
+
+        @keyframes gridPulse {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.3; }
+        }
+
+        /* Floating shapes */
+        .floating-shape {
+            position: absolute;
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .calendar-shape {
+            top: 10%;
+            right: 10%;
+            width: 200px;
+            height: 200px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .clock-shape {
+            bottom: 10%;
+            left: 5%;
+            width: 150px;
+            height: 150px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
         }
 
         .container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            padding: 3rem;
-            border-radius: 20px;
+            padding: 3.5rem;
+            border-radius: 24px;
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            max-width: 800px;
+            max-width: 900px;
             width: 90%;
             position: relative;
             z-index: 1;
-            margin: 20px;
+            overflow: hidden;
+        }
+
+        /* Glowing border effect */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-color), transparent, var(--accent-color));
+            border-radius: 24px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.5; }
         }
 
         .logo {
             font-size: 2.8rem;
             font-weight: 700;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             background: linear-gradient(to right, var(--text-light), var(--white));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            line-height: 1.2;
+            position: relative;
         }
 
-        .description {
-            font-size: 1.2rem;
-            margin: 1.5rem auto;
-            line-height: 1.8;
-            color: var(--text-light);
-            max-width: 700px;
+        /* Logo underline animation */
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 3px;
+            animation: underlinePulse 2s infinite;
+        }
+
+        @keyframes underlinePulse {
+            0% { width: 100px; opacity: 0.5; }
+            50% { width: 150px; opacity: 1; }
+            100% { width: 100px; opacity: 0.5; }
         }
 
         .buttons {
-            margin-top: 2.5rem;
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 3rem;
+            position: relative;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem 2rem;
+            padding: 1rem 2.5rem;
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 500;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
-            min-width: 180px;
+            min-width: 200px;
             position: relative;
             overflow: hidden;
         }
 
-        .btn:before {
+        /* Button hover animation */
+        .btn::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
-            transform: translateX(-100%);
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            transform: translateX(-100%) rotate(45deg);
             transition: transform 0.6s ease;
         }
 
-        .btn:hover:before {
-            transform: translateX(100%);
+        .btn:hover::before {
+            transform: translateX(100%) rotate(45deg);
         }
 
         .btn-primary {
             background: var(--white);
             color: var(--primary-color);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary:hover {
-            background: var(--text-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 15px var(--shadow);
         }
 
         .btn-secondary {
             background: transparent;
             color: var(--white);
             border: 2px solid var(--white);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px var(--shadow);
         }
 
-        .btn-secondary:hover {
-            background: var(--white);
-            color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        /* Add SVG illustrations */
+        .calendar-shape {
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='40' y='40' width='120' height='120' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M50 60 H150 M50 90 H150 M50 120 H150 M80 60 V140 M110 60 V140' stroke='%236A4C9C' stroke-width='2'/%3E%3C/svg%3E");
+        }
+
+        .clock-shape {
+            background-image: url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='75' cy='75' r='60' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M75 25 V75 H105' stroke='%236A4C9C' stroke-width='3'/%3E%3C/svg%3E");
         }
 
         @media (max-width: 768px) {
@@ -147,7 +224,7 @@
             }
 
             .logo {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
 
             .description {
@@ -155,32 +232,34 @@
                 line-height: 1.6;
             }
 
-            .btn {
-                width: 100%;
-                margin: 0.5rem 0;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 1.5rem;
-            }
-
-            .logo {
-                font-size: 1.8rem;
-            }
-
             .buttons {
                 flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .floating-shape {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Background grid -->
+    <div class="background-grid">
+        <!-- Grid cells will be added via JavaScript -->
+    </div>
+
+    <!-- Floating shapes -->
+    <div class="floating-shape calendar-shape"></div>
+    <div class="floating-shape clock-shape"></div>
+
     <div class="container">
-        <div class="logo">Timetable & Overtime Management System</div>
+        <div class="logo">Timetable & Workload Management System</div>
         <p class="description">
-            Simplify faculty schedule management and workload tracking with our intuitive platform. Effortlessly generate semester timetables, access personalized schedules, and track extra workloads. With OCR technology, convert scanned timetables into accurate digital data, saving time and reducing errors. Experience efficiency and precision like never before!
+            Simplify faculty schedule management and workload tracking with our intuitive platform. Experience efficiency and precision like never before!
         </p>
         <div class="buttons">
             <a href="/teacher-login" class="btn btn-primary">Teacher Login</a>
@@ -188,5 +267,16 @@
             <a href="/admin-login" class="btn btn-secondary">Admin Login</a>
         </div>
     </div>
+
+    <script>
+        // Create background grid
+        const grid = document.querySelector('.background-grid');
+        for (let i = 0; i < 400; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.style.animationDelay = `${Math.random() * 3}s`;
+            grid.appendChild(cell);
+        }
+    </script>
 </body>
 </html>
