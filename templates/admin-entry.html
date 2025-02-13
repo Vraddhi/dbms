@@ -123,15 +123,7 @@
             pointer-events: none;
         }
 
-        .grid-cell {
-            border: 1px solid var(--white);
-            animation: gridPulse 3s infinite alternate;
-        }
 
-        @keyframes gridPulse {
-            0% { opacity: 0.1; }
-            100% { opacity: 0.3; }
-        }
 
         /* Floating shapes */
         .floating-shape {
@@ -181,10 +173,6 @@
             box-shadow: 0 5px 15px rgba(31, 38, 135, 0.12);
         }
 
-        .timetable:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 20px rgba(106, 76, 156, 0.2);
-        }
 
         .buttons {
             display: flex;
@@ -262,13 +250,14 @@
 
         <div class="header">
             <h1>Admin Dashboard</h1>
+        </div>
+
             <div class="header-buttons">
                 <button class="generate-btn" onclick="location.href='{{ url_for('generate_timetable') }}'">Generate Timetable</button>
-                <button class="generate-btn" onclick="location.href='{{ url_for('ocr_timetable') }}'">Upload Timetable</button>
-                                <button class="generate-btn" onclick="location.href='{{ url_for('admin_view_ot') }}'">Check Teacher's OT</button>
+                <button class="generate-btn" onclick="location.href='{{ url_for('admin_view_ot') }}'">Check Teacher's OT</button>
+                <button class="generate-btn" onclick="location.href='/OCR'">Upload Timetable</button><br/><br/>
                 <button class="logout-btn" onclick="location.href='{{ url_for('logout') }}'">Logout</button>
-            </div>
-        </div>
+            </div><br/>
 
         <!-- Content Section -->
         <div class="content">

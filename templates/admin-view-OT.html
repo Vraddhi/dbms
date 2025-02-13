@@ -7,142 +7,137 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
     :root {
-        --primary-color: #6A4C9C;
-        --secondary-color: #D8B0F7;
-        --accent-color: #F1E1FF;
-        --text-light: #F9F5FF;
-        --white: #ffffff;
-        --shadow: rgba(106, 76, 156, 0.2);
-    }
+    --primary-color: #6A4C9C;
+    --secondary-color: #D8B0F7;
+    --accent-color: #F1E1FF;
+    --text-dark: #2D2D2D;
+    --text-light: #F9F5FF;
+    --white: #ffffff;
+    --border-color: #E0E0E0;
+    --shadow: rgba(106, 76, 156, 0.2);
+    --table-stripe: #F8F5FF;
+}
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        color: var(--white);
-    }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: var(--text-dark);
+}
 
-    .container {
-        width: 95%;
-        max-width: 1000px;
-        background: rgba(255, 255, 255, 0.15); /* Semi-transparent white */
-        backdrop-filter: blur(12px);
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(31, 38, 135, 0.37);
-    }
+.container {
+    width: 95%;
+    max-width: 1000px;
+    padding: 40px;
+    border-radius: 20px;
+    background-color: var(--white);
+    box-shadow: 0 4px 20px var(--shadow);
+}
 
-    h1 {
-        text-align: center;
-        font-size: 2.5rem;
-        font-weight: 600;
-        background: linear-gradient(to right, var(--text-light), var(--white));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 20px;
-    }
+h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
 
-    .header-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 15px;
-    }
+.header-buttons button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-    .header-buttons button {
-        padding: 10px 20px;
-        font-size: 1rem;
-        font-weight: 500;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+.header-buttons .back-btn {
+    background: var(--primary-color);
+    color: var(--text-light);
+}
 
-    .header-buttons .back-btn {
-        background: var(--primary-color);
-        color: var(--white);
-    }
+.header-buttons .logout-btn {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+}
 
-    .header-buttons .back-btn:hover {
-        background: #553982;
-        box-shadow: 0 4px 12px var(--shadow);
-    }
+.header-buttons .back-btn:hover {
+    background: #553982;
+    box-shadow: 0 4px 12px var(--shadow);
+}
 
-    .header-buttons .logout-btn {
-        background: #E57373;
-        color: var(--white);
-    }
+.form-label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+    display: block;
+}
 
-    .header-buttons .logout-btn:hover {
-        background: #D32F2F;
-    }
-
-    .form-label {
-        color: var(--text-light);
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .form-control, .form-select {
-        width: 100%;
-        padding: 12px;
-        border-radius: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        background: rgba(255, 255, 255, 0.3);
-        color: var(--white);
-        font-size: 1rem;
-        margin-bottom: 20px;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--secondary-color);
-        box-shadow: 0 0 5px var(--secondary-color);
-    }
-
-.form-select {
+.form-control, .form-select {
     width: 100%;
     padding: 12px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.3);
-    color: black; /* Set dropdown text color to black */
+    border: 1px solid var(--border-color);
     font-size: 1rem;
     margin-bottom: 20px;
+    background-color: var(--white);
+    color: var(--text-dark);
 }
-    .background-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            grid-template-rows: repeat(20, 1fr);
-            opacity: 0.1;
-            pointer-events: none;
-        }
 
-        .grid-cell {
-            border: 1px solid var(--white);
-            animation: gridPulse 3s infinite alternate;
-        }
+.form-select {
+    background-color: var(--white);
+}
 
-        @keyframes gridPulse {
-            0% { opacity: 0.1; }
-            100% { opacity: 0.3; }
-        }
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
 
-        /* Floating shapes */
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+
+tr:nth-child(even) {
+    background: var(--table-stripe);
+}
+
+tr:hover {
+    background: var(--accent-color);
+}
+
+td a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+td a:hover {
+    text-decoration: underline;
+}
+
+::placeholder {
+    color: #999;
+    opacity: 1;
+}
+/* Floating shapes */
         .floating-shape {
             position: absolute;
             opacity: 0.2;
@@ -171,6 +166,14 @@
             50% { transform: translateY(-20px) rotate(5deg); }
             100% { transform: translateY(0) rotate(0deg); }
         }
+
+.background-grid {
+    opacity: 0.1;
+}
+
+.floating-shape {
+    opacity: 0.2;
+}
 .calendar-shape {
             background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='40' y='40' width='120' height='120' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M50 60 H150 M50 90 H150 M50 120 H150 M80 60 V140 M110 60 V140' stroke='%236A4C9C' stroke-width='2'/%3E%3C/svg%3E");
         }
@@ -178,44 +181,15 @@
         .clock-shape {
             background-image: url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='75' cy='75' r='60' fill='%23ffffff' opacity='0.8'/%3E%3Cpath d='M75 25 V75 H105' stroke='%236A4C9C' stroke-width='3'/%3E%3C/svg%3E");
         }
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
 
-    th, td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-        color: var(--white);
-    }
-
-    th {
-        background-color: var(--primary-color);
-        color: var(--white);
-    }
-
-    tr:nth-child(even) {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    tr:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-
-::placeholder {
-            color: rgba(255, 255, 255, 0.7); /* Light placeholder text */
-            opacity: 1;
-
+        @media (max-width: 768px) {
+                        .floating-shape {
+                display: none;
+            }
+        }
 </style>
 </head>
 <body>
-<div class="background-grid">
-        <!-- Grid cells will be added via JavaScript -->
-    </div>
-
     <!-- Floating shapes -->
     <div class="floating-shape calendar-shape"></div>
     <div class="floating-shape clock-shape"></div>
@@ -223,8 +197,7 @@
         <div class="header-buttons">
             <button class="back-btn" onclick="window.location.href='/admin-dashboard';">Back to Dashboard</button>
             <button class="logout-btn" onclick="window.location.href='/logout';" >Logout</button>
-
-        </div>
+        </div><br/>
         <h1>Admin Overtime View</h1>
 
         <div>
@@ -235,9 +208,9 @@
         <div>
             <label for="date_range" class="form-label">Select Date Range</label>
             <select id="date_range" class="form-select">
-                <option value="week" selected>This Week</option>
+                <option value="week" >This Week</option>
                 <option value="month">This Month</option>
-                <option value="custom">Custom Range</option>
+                <option value="custom" selected>Custom Range</option>
             </select>
         </div>
 

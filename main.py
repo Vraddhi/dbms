@@ -1,25 +1,28 @@
-from datetime import datetime
-
+from datetime import datetime, timedelta,time
+import time
 from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, flash,session,jsonify
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
-from PIL import Image
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
+from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
+from msrest.authentication import CognitiveServicesCredentials
 import pytesseract
 import os
-import re
-from datetime import timedelta
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 client = MongoClient("mongodb://localhost:27017/")
-db = client["management_dbms"]
+db = client["DBMS_LAB"]
 overtime_collection = db["teacher_overtime"]
 timetable_collection=db['timetable']
-users_collection = db["users"]
+users_collection=db['users']
+ocr_collection = db["ocr_timetable"]
+
 
 #this is ocr thing
 UPLOAD_FOLDER = 'static/uploads'
@@ -33,9 +36,28 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
+days = ["MONDAY", "TUESDAY", "WEDNESDAY", "Thursday", "Friday", "SATURDAY"]
+
+subscription_key = os.environ["VISION_KEY"]
+endpoint = os.environ["VISION_ENDPOINT"]
+
+computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+
+time_slots = [
+    "Monday 09:00-10:00", "Monday 10:00-11:00", "Monday 11:30-12:30", "Monday 12:30-1:30", "Monday 2:30-3:30",
+    "Monday 3:30-4:30",
+    "Tuesday 09:00-10:00", "Tuesday 10:00-11:00", "Tuesday 11:30-12:30", "Tuesday 12:30-1:30", "Tuesday 2:30-3:30",
+    "Tuesday 3:30-4:30",
+    "Wednesday 09:00-10:00", "Wednesday 10:00-11:00", "Wednesday 11:30-12:30", "Wednesday 12:30-1:30",
+    "Wednesday 2:30-3:30", "Wednesday 3:30-4:30",
+    "Thursday 09:00-10:00", "Thursday 10:00-11:00", "Thursday 11:30-12:30", "Thursday 12:30-1:30", "Thursday 2:30-3:30",
+    "Thursday 3:30-4:30",
+    "Friday 09:00-10:00", "Friday 10:00-11:00", "Friday 11:30-12:30", "Friday 12:30-1:30", "Friday 2:30-3:30",
+    "Friday 3:30-4:30"
+]
 
 # Define time slots as per your requirements
-time_slots = [
+time_slot = [
     {"slot_id": "A1", "start_time": "9:00 AM", "end_time": "10:00 AM"},
     {"slot_id": "A2", "start_time": "10:00 AM", "end_time": "11:00 AM"},
     {"slot_id": "A3", "start_time": "11:30 AM", "end_time": "12:30 PM"},
@@ -57,146 +79,352 @@ def admin_dashboard():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-# this is OCR
-@app.route('/upload_timetable', methods=['POST'])
-def upload_timetable():
-    if 'timetable' not in request.files:
-        flash('No file part', 'error')
-        return redirect(url_for('ocr_timetable'))
 
-    file = request.files['timetable']
+
+@app.route('/ocr', methods=['GET', 'POST'])
+def ocr_process():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            try:
+                # Save and process the file
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+
+                # Perform OCR and process the text
+                extracted_text = perform_ocr(file_path)
+                structured_data = preprocess_ocr_text(extracted_text)
+
+                # Store in MongoDB
+                if store_timetable_in_mongo(structured_data):
+                    flash('OCR processing complete. Timetable stored in database.')
+                else:
+                    flash('Error storing data in database.')
+
+                return redirect(url_for('ocr_process'))
+
+            except Exception as e:
+                flash(f'Error processing file: {str(e)}')
+                return redirect(request.url)
+
+    return render_template('OCR.html')
+
+
+def preprocess_ocr_text(text):
+    """Parses the extracted OCR text and structures it into a list of dictionaries"""
+    lines = text.strip().split("\n")
+    structured_data = []
+
+    # Define days with various possible cases
+    valid_days = {day.upper(): day.upper() for day in [
+        "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"
+    ]}
+
+    # Extract time slots from the first few lines
+    time_slots = []
+    current_day = None
+    time_index = 0
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        # Check for time slots
+        if line.lower().replace(" ", "").startswith(("09:", "10:", "11:", "12:", "2:", "3:")):
+            time_slots.append(line.strip())
+            continue
+
+        upper_line = line.upper()
+        if upper_line in valid_days:
+            current_day = valid_days[upper_line]
+            time_index = 0
+            continue
+
+        # Process course entries
+        if current_day and time_index < len(time_slots):
+            structured_data.append({
+                "day": current_day,
+                "timeslot": time_slots[time_index],
+                "coursecode": line
+            })
+            time_index += 1
+
+    # Debug printing
+    print("Detected time slots:", time_slots)
+    print("Structured data:", structured_data)
+
+    return structured_data
+
+
+def perform_ocr(image_path):
+    """Perform OCR on the given image file using Azure Computer Vision"""
+    with open(image_path, "rb") as image_stream:
+        read_response = computervision_client.read_in_stream(image_stream, raw=True)
+
+    read_operation_location = read_response.headers["Operation-Location"]
+    operation_id = read_operation_location.split("/")[-1]
+
+    while True:
+        read_result = computervision_client.get_read_result(operation_id)
+        if read_result.status not in ['notStarted', 'running']:
+            break
+        time.sleep(1)
+
+    # Join the extracted lines into a single string
+    extracted_text = ""
+    if read_result.status == OperationStatusCodes.succeeded:
+        for text_result in read_result.analyze_result.read_results:
+            for line in text_result.lines:
+                extracted_text += line.text + "\n"
+
+    return extracted_text
+
+
+def store_timetable_in_mongo(timetable_data):
+    """Stores the structured timetable data into MongoDB"""
+    try:
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["DBMS_LAB"]
+        ocr_collection = db["ocr_timetable"]
+
+        # Add timestamp to the data
+        document = {
+            "timestamp": datetime.now(),
+            "timetable": timetable_data
+        }
+
+        ocr_collection.insert_one(document)
+        return True
+    except Exception as e:
+        print(f"Error storing in MongoDB: {e}")
+        return False
+
+
+# Route to upload an image and process it with OCR
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+
+    file = request.files['file']
+
     if file.filename == '':
-        flash('No selected file', 'error')
-        return redirect(url_for('ocr_timetable'))
+        flash('No selected file')
+        return redirect(request.url)
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        try:
-            # OCR Processing
-            text = pytesseract.image_to_string(Image.open(filepath))
-            flash("OCR Text Extraction Successful.", "info")
-            # Parse and insert timetable
-            timetable_data = parse_timetable(text)
-            if timetable_data and 'courses' in timetable_data:
-                result = db.timetable.insert_one(timetable_data)
-                flash(f"Timetable inserted successfully with ID {result.inserted_id}.", "success")
-            else:
-                flash("No valid timetable data extracted.", "error")
-        except Exception as e:
-            flash(f"Error during OCR processing: {e}", "error")
+        # Process the file with Azure OCR
+        with open(filepath, "rb") as image_stream:
+            read_response = computervision_client.read_in_stream(image_stream, raw=True)
+
+        read_operation_location = read_response.headers["Operation-Location"]
+        operation_id = read_operation_location.split("/")[-1]
+
+        # Wait for the OCR result
+        while True:
+            read_result = computervision_client.get_read_result(operation_id)
+            if read_result.status not in ['notStarted', 'running']:
+                break
+            time.sleep(1)
+
+        extracted_text = ""
+        if read_result.status == OperationStatusCodes.succeeded:
+            for text_result in read_result.analyze_result.read_results:
+                for line in text_result.lines:
+                    extracted_text += line.text + "\n"
+
+        # Preprocess and insert into MongoDB
+        structured_data = preprocess_ocr_text(extracted_text)
+        ocr_collection.insert_one({"timetable": structured_data})
+
+        flash('OCR processing completed and data saved to MongoDB!')
+        return redirect(url_for('show_timetable'))
+
+
+@app.route('/personalized_timetable', methods=['POST'])
+def generate_personalized_timetable():
+    course_code = request.form.get('course_code')
+    teacher_name = request.form.get('teacher_name')
+
+    # Query MongoDB to fetch the timetable (only by course code)
+    timetable_entries = fetch_timetable_from_mongo(course_code)
+
+    if timetable_entries:
+        # Format the timetable data for template
+        formatted_timetable = []
+        for entry in timetable_entries:
+            formatted_timetable.append({
+                'day': entry['day'],
+                'time_slot': entry['timeslot'],
+                'course': entry['coursecode']
+            })
+
+        return render_template('personalized_timetable.html',
+                               timetable=formatted_timetable,
+                               course_code=course_code,
+                               teacher_name=teacher_name)  # We still pass teacher_name for display
     else:
-        flash("Invalid file format. Please upload an image file.", "error")
+        flash('No timetable found for the given course code')
+        return redirect(url_for('ocr_process'))
 
-    return redirect(url_for('ocr_timetable'))
 
-def parse_timetable(ocr_text):
+def fetch_timetable_from_mongo(course_code):
+    """
+    Fetch timetable from MongoDB based on the course code only, with deduplication
+    Returns unique entries only
+    """
     try:
-        timetable = []
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["DBMS_LAB"]
+        ocr_collection = db["ocr_timetable"]
 
-        # Patterns
-        day_pattern = r"\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"
-        time_slot_pattern = r"\b(\d{1,2}:\d{2}\s*[-~]\s*\d{1,2}:\d{2})\b"
-        course_code_pattern = r"\b[A-Z]+\d+[A-Z]+\b"
+        # Find all timetable documents
+        all_timetables = ocr_collection.find({})
+        matching_entries = []
+        seen_entries = set()  # To track unique combinations
 
-        # Split into lines
-        lines = ocr_text.split("\n")
-        current_day = None
-        current_time_slots = []
-        current_courses = []
+        for timetable_doc in all_timetables:
+            if 'timetable' in timetable_doc:
+                # Check each entry in the timetable
+                for entry in timetable_doc['timetable']:
+                    coursecode = entry.get('coursecode', '').lower()
+                    if course_code.lower() in coursecode:
+                        # Create a unique key for this entry
+                        entry_key = (
+                            entry.get('day', '').upper(),
+                            entry.get('timeslot', '').strip(),
+                            entry.get('coursecode', '').strip()
+                        )
 
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue  # Skip empty lines
+                        # Only add if we haven't seen this combination before
+                        if entry_key not in seen_entries:
+                            seen_entries.add(entry_key)
+                            # Clean up the entry
+                            cleaned_entry = {
+                                'day': entry.get('day', '').upper(),
+                                'timeslot': entry.get('timeslot', '').strip(),
+                                'coursecode': entry.get('coursecode', '').strip()
+                            }
+                            matching_entries.append(cleaned_entry)
 
-            # Detect day
-            day_match = re.search(day_pattern, line, re.IGNORECASE)
-            if day_match:
-                current_day = day_match.group().capitalize()
-                print(f"Found Day: {current_day}")
-                continue
+        # Sort entries by day and time for consistent display
+        day_order = {
+            'MONDAY': 1,
+            'TUESDAY': 2,
+            'WEDNESDAY': 3,
+            'THURSDAY': 4,
+            'FRIDAY': 5,
+            'SATURDAY': 6
+        }
 
-            # Detect time slots
-            time_slots = re.findall(time_slot_pattern, line)
-            if time_slots:
-                current_time_slots = time_slots
-                print(f"Found Time Slots: {current_time_slots}")
-                continue
+        matching_entries.sort(key=lambda x: (
+            day_order.get(x['day'], 7),  # Sort by day
+            x['timeslot']  # Then by time slot
+        ))
 
-            # Detect course codes
-            course_codes = re.findall(course_code_pattern, line)
-            if course_codes:
-                if not current_time_slots:  # Handle missing time slots
-                    current_time_slots = ["Unknown"] * len(course_codes)
-                for course_code in course_codes:
-                    # Match each course with the corresponding time slot
-                    for time_slot in current_time_slots:
-                        timetable.append({
-                            'course_code': course_code.strip(),
-                            'day': current_day if current_day else "Unknown",
-                            'time_slot': time_slot.strip() if time_slot else "Unknown"
-                        })
-                print(f"Added Courses: {course_codes} for Day: {current_day or 'Unknown'}")
+        return matching_entries
 
-        return {'courses': timetable}
     except Exception as e:
-        print(f"Error during OCR processing: {e}")
-        return {'courses': []}
-    
-@app.route('/ocr')  # This will be the URL path
+        print(f"Error fetching from MongoDB: {e}")
+        return None
+
+
+@app.route('/OCR')
 def ocr_page():
-    return render_template('OCR.html')  # This looks for OCR.html in the 'templates' folder
-
-
-@app.route("/ocr_timetable", methods=['GET', 'POST'])
-def ocr_timetable():
-    if request.method == 'POST':
-        if 'timetable' not in request.files:
-            flash('No file part in the request', 'error')
-            return redirect(url_for('ocr_timetable'))
-
-        file = request.files['timetable']
-        if file.filename == '':
-            flash('No file selected for upload', 'error')
-            return redirect(url_for('ocr_timetable'))
-
-        if file and allowed_file(file.filename):
-            try:
-                # Save the uploaded file
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-
-                # Perform OCR on the uploaded file
-                text = pytesseract.image_to_string(Image.open(filepath))
-                print("Extracted OCR Text:", text)
-
-                # Parse OCR text into timetable data
-                timetable_data = parse_timetable(text)
-                print("Parsed Timetable Data:", timetable_data)
-
-                # Insert timetable data into MongoDB
-                if timetable_data and 'courses' in timetable_data:
-                    result = db.timetable.insert_one(timetable_data)
-                    print("Inserted Timetable ID:", result.inserted_id)
-                    flash('Timetable uploaded and processed successfully!', 'success')
-                else:
-                    flash('Failed to extract meaningful timetable data.', 'error')
-
-            except Exception as e:
-                print("Error during OCR processing:", e)
-                flash('An error occurred while processing the timetable.', 'error')
-        else:
-            flash('Invalid file type. Please upload a valid image file.', 'error')
-
-        return redirect(url_for('ocr_timetable'))
-
-    # Render the OCR upload page for GET requests
     return render_template('OCR.html')
-# till here
+
+def assign_time_slots(courses, semester_group):
+    timetable = []
+    available_slots = time_slot[:]
+    random.shuffle(available_slots)  # Randomize slots
+
+    # Fetch already assigned slots for teachers across all semesters
+    teacher_schedule = {}
+    subject_daily_schedule = {}  # To track subjects per day
+
+    existing_timetables = db.timetable.find({})
+
+    for timetable_entry in existing_timetables:
+        for course in timetable_entry['courses']:
+            teacher_id = course['teacher_id']
+            course_name = course['course_name']
+
+            # Track teacher schedule globally (across all semesters)
+            if teacher_id not in teacher_schedule:
+                teacher_schedule[teacher_id] = set()
+            teacher_schedule[teacher_id].update(course['assigned_slots'])
+
+            # Track subject schedule by day
+            for slot in course['assigned_slots']:
+                day = slot.split()[0]
+                if course_name not in subject_daily_schedule:
+                    subject_daily_schedule[course_name] = set()
+                subject_daily_schedule[course_name].add(day)
+
+    for course in courses:
+        course_hours = int(course['hours_per_week'])
+        teacher_id = course['teacher_id']
+        course_name = course['course_name']
+        assigned_slots = []
+
+        if teacher_id not in teacher_schedule:
+            teacher_schedule[teacher_id] = set()
+        if course_name not in subject_daily_schedule:
+            subject_daily_schedule[course_name] = set()
+
+        teacher_assigned_days = set()  # Track days teacher is already assigned
+
+        for _ in range(course_hours):
+            random.shuffle(available_slots)  # Shuffle before each assignment
+            selected_slot = None
+
+            for slot in available_slots:
+                day = slot.split()[0]
+
+                # Check constraints:
+                if (slot not in teacher_schedule[teacher_id]) and \
+                        (day not in subject_daily_schedule[course_name]) and \
+                        (day not in teacher_assigned_days):
+                    selected_slot = slot
+                    teacher_schedule[teacher_id].add(slot)
+                    subject_daily_schedule[course_name].add(day)
+                    teacher_assigned_days.add(day)
+                    available_slots.remove(slot)
+                    assigned_slots.append(slot)
+                    break
+
+            if not selected_slot:
+                flash(f'Not enough valid slots for {course["faculty_name"]} ({course["course_name"]})', 'error')
+                return None
+
+        timetable.append({
+            'semester_group': semester_group,
+            'course_name': course['course_name'],
+            'faculty_name': course['faculty_name'],
+            'teacher_id': course['teacher_id'],
+            'assigned_slots': assigned_slots
+        })
+
+    return timetable
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('teacher-dashboard.html')
 
 
 @app.route('/admin-login', methods=['GET', 'POST'])
@@ -213,13 +441,6 @@ def admin_login():
             flash('Invalid admin email or password', 'error')
             return redirect(url_for('admin_login'))
     return render_template('admin-login.html')
-
-
-
-@app.route('/dashboard')
-def dashboard():
-    return render_template('teacher-dashboard.html')
-
 
 @app.route('/log_overtime', methods=['POST'])
 def log_overtime():
@@ -336,8 +557,6 @@ def get_overtime():
             })
 
     return jsonify(result)
-
-
 
 @app.route('/get_faculty_overtime_details', methods=['GET'])
 def get_faculty_overtime_details():
@@ -635,10 +854,6 @@ def generate_timetable():
             flash(f"Error generating timetable: {str(e)}")
             return redirect(url_for('generate_timetable'))
 
-
-
-
-
 @app.route('/teacher-login', methods=['GET', 'POST'])
 def teacher_login():
     if request.method == 'POST':
@@ -658,7 +873,6 @@ def teacher_login():
             return redirect(url_for('teacher_login'))
 
     return render_template('teacher-login.html')
-
 
 @app.route('/teacher-signup', methods=['GET', 'POST'])
 def teacher_signup():
@@ -698,14 +912,12 @@ def teacher_signup():
 
     return render_template('teacher-signup.html')
 
-
 @app.route('/teacher-entry')
 def teacher_entry():
     if "email" not in session:
         flash("Please log in first", "error")
         return redirect(url_for("teacher_login"))
     return render_template('teacher-entry.html')
-
 
 @app.route('/teacher-view-timetable')
 def teacher_view_timetable():
