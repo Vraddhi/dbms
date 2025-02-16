@@ -140,7 +140,7 @@ def preprocess_ocr_text(text):
             continue
 
         # Check for time slots
-        if line.lower().replace(" ", "").startswith(("09:", "10:", "11:", "12:", "2:", "3:")):
+        if line.lower().replace(" ", "").startswith(("9:", "10:", "11:", "12:", "2:", "3:")):
             time_slots.append(line.strip())
             continue
 
