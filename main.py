@@ -9,7 +9,6 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
-import pytesseract
 import os
 from werkzeug.utils import secure_filename
 
@@ -44,15 +43,15 @@ endpoint = os.environ["VISION_ENDPOINT"]
 computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
 time_slots = [
-    "Monday 09:00-10:00", "Monday 10:00-11:00", "Monday 11:30-12:30", "Monday 12:30-1:30", "Monday 2:30-3:30",
+    "Monday 9:00-10:00", "Monday 10:00-11:00", "Monday 11:30-12:30", "Monday 12:30-1:30", "Monday 2:30-3:30",
     "Monday 3:30-4:30",
-    "Tuesday 09:00-10:00", "Tuesday 10:00-11:00", "Tuesday 11:30-12:30", "Tuesday 12:30-1:30", "Tuesday 2:30-3:30",
+    "Tuesday 9:00-10:00", "Tuesday 10:00-11:00", "Tuesday 11:30-12:30", "Tuesday 12:30-1:30", "Tuesday 2:30-3:30",
     "Tuesday 3:30-4:30",
-    "Wednesday 09:00-10:00", "Wednesday 10:00-11:00", "Wednesday 11:30-12:30", "Wednesday 12:30-1:30",
+    "Wednesday 9:00-10:00", "Wednesday 10:00-11:00", "Wednesday 11:30-12:30", "Wednesday 12:30-1:30",
     "Wednesday 2:30-3:30", "Wednesday 3:30-4:30",
-    "Thursday 09:00-10:00", "Thursday 10:00-11:00", "Thursday 11:30-12:30", "Thursday 12:30-1:30", "Thursday 2:30-3:30",
+    "Thursday *09:00-10:00", "Thursday 10:00-11:00", "Thursday 11:30-12:30", "Thursday 12:30-1:30", "Thursday 2:30-3:30",
     "Thursday 3:30-4:30",
-    "Friday 09:00-10:00", "Friday 10:00-11:00", "Friday 11:30-12:30", "Friday 12:30-1:30", "Friday 2:30-3:30",
+    "Friday 9:00-10:00", "Friday 10:00-11:00", "Friday 11:30-12:30", "Friday 12:30-1:30", "Friday 2:30-3:30",
     "Friday 3:30-4:30"
 ]
 
@@ -477,6 +476,7 @@ def log_overtime():
     overtime_collection.insert_one(overtime_entry)  # Save to MongoDB
 
     return jsonify({"message": "Overtime logged successfully"})
+    
 @app.route('/get_overtime_events', methods=['GET'])
 def get_overtime_events():
     if 'email' not in session:
