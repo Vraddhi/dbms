@@ -33,7 +33,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 days = ["MONDAY", "TUESDAY", "WEDNESDAY", "Thursday", "Friday", "SATURDAY"]
 
@@ -1012,6 +1011,98 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('entry'))
+
+
+
+
+
+
+
+
+@app.route('/view_all_ot', methods=['GET'])
+def view_all_ot():
+    return render_template('admin-view-all-ot.html')
+
+
+
+@app.route('/get_overtime_all', methods=['GET'])
+def get_overtime_all():
+    
+    search_query = request.args.get('search_query', '').strip()
+    range_type = request.args.get('range', 'week')
+    start_date = request.args.get('start_date', '')
+    end_date = request.args.get('end_date', '')
+
+    
+    now = datetime.now()
+    if range_type == 'week':
+        start_date = now - timedelta(days=now.weekday())
+        end_date = now
+    elif range_type == 'month':
+        start_date = now.replace(day=1)
+        end_date = now
+    elif range_type == 'custom' and start_date and end_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    else:
+        return jsonify({"error": "Invalid date range"}), 400
+
+    
+    overtime_query = {"date": {"$gte": start_date.strftime('%Y-%m-%d'), "$lte": end_date.strftime('%Y-%m-%d')}}
+
+    
+    if search_query:
+        matching_users = list(db.users.find({
+            "$or": [
+                {"name": {"$regex": search_query, "$options": "i"}},
+                {"faculty_id": search_query}
+            ]
+        }))
+        user_emails = [user["email"] for user in matching_users]
+        if user_emails:
+            overtime_query["email"] = {"$in": user_emails}
+        else:
+            return jsonify([])  # No matches found
+
+    
+    pipeline = [
+        {"$match": overtime_query},
+        {
+            "$group": {
+                "_id": "$email",
+                "total_hours": {"$sum": "$hours_worked"},
+            }
+        },
+        {"$sort": {"total_hours": -1}}  # Sort by total hours in descending order
+    ]
+
+    overtime_data = list(overtime_collection.aggregate(pipeline))
+
+    
+    all_faculty = list(db.users.find({}, {"_id": 0, "name": 1, "email": 1, "faculty_id": 1}))
+    
+    
+    overtime_by_email = {data["_id"]: data["total_hours"] for data in overtime_data}
+    
+    
+    result = []
+    for faculty in all_faculty:
+        result.append({
+            "faculty_name": faculty["name"],
+            "faculty_id": faculty["faculty_id"],
+            "email": faculty["email"],
+            "total_hours": overtime_by_email.get(faculty["email"], 0)  # Default to 0 if no overtime
+        })
+    
+    
+    if search_query:
+        result = [r for r in result if 
+                  search_query.lower() in r["faculty_name"].lower() or 
+                  search_query == r["faculty_id"]]
+    
+    return jsonify(result)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
